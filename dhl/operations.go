@@ -1,74 +1,42 @@
 package dhl
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
-	"jorismertz/lightspeed-dhl/secrets"
-	"net/http"
 )
 
-func CreateDraft(draft *Draft, credentials *secrets.Dhl) error {
+func CreateDraft(draft *Draft) error {
+	// Change this to Marshal later, when debugging is done
 	body, err := json.MarshalIndent(*draft, "", "  ")
 	if err != nil {
 		return err
 	}
-
-	url := fmt.Sprintf("%s/drafts", endpoint)
-	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
+	res, err := Request("/drafts", "POST", &body)
 	if err != nil {
 		return err
 	}
-
-	accessToken := Authenticate(*credentials).AccessToken
-	req.Header.Set("Authorization", "Bearer "+accessToken)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-	req.Body = io.NopCloser(bytes.NewReader(body))
-
-	client := &http.Client{}
-	res, err := client.Do(req)
-
-	if err != nil {
-		return err
-	}
-
-	body, err = io.ReadAll(res.Body)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(string(body))
 	fmt.Println(res)
 	return nil
 }
 
-func GetDrafts(credentials *secrets.Dhl) error {
-	url := fmt.Sprintf("%s/drafts", endpoint)
-	req, err := http.NewRequest("GET", url, nil)
+func GetDrafts() []Draft {
+	res, err := Request("/drafts", "GET", nil)
 	if err != nil {
-		return err
-	}
-
-	accessToken := Authenticate(*credentials).AccessToken
-	req.Header.Set("Authorization", "Bearer "+accessToken)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-
-	client := &http.Client{}
-	res, err := client.Do(req)
-
-	if err != nil {
-		return err
+		panic(err)
 	}
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	fmt.Println(string(body))
-	fmt.Println(res)
-	return nil
+	var result []Draft
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		panic(err)
+	}
+
+	return result
 }

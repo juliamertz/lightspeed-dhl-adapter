@@ -129,5 +129,5 @@ type Metadata struct {
 	UserId         string `json:"userId"`
 	LastModifiedBy string `json:"lastModifiedBy"`
 	OrganizationId string `json:"organizationId"`
-	TimeCreated    int64  `json:"timeCreated"`
+	TimeCreated    string `json:"timeCreated"`
 }

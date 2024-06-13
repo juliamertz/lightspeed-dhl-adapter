@@ -1,44 +1,35 @@
 package dhl
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"jorismertz/lightspeed-dhl/secrets"
 	"net/http"
 )
 
-func Request() error {
-	url := fmt.Sprintf("%s/drafts", endpoint)
-	req, err := http.NewRequest("GET", url, nil)
+func Request(path string, method string, body *[]byte) (*http.Response, error) {
+	config, err := secrets.LoadSecrets("config.toml")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	secrets, err := secrets.LoadSecrets("secrets.toml")
+	url := fmt.Sprintf("https://api-gw.dhlparcel.nl%s", path)
+	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	credentials := secrets.Dhl
-	accessToken := Authenticate(credentials).AccessToken
+
+	accessToken := Authenticate(config.Dhl).AccessToken
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
+	if body != nil {
+		req.Body = io.NopCloser(bytes.NewReader(*body))
+	}
 
 	client := &http.Client{}
-	res, err := client.Do(req)
-
-	if err != nil {
-		return err
-	}
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(string(body))
-	fmt.Println(res)
-	return nil
+	return client.Do(req)
 }
 
 func ShipperFromConfig(d secrets.CompanyInfo) Shipper {

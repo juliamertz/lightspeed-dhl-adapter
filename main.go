@@ -20,13 +20,14 @@ const (
 func main() {
 	database.Initialize()
 
-	config, err := secrets.LoadSecrets("config.toml")
+	drafts := dhl.GetDrafts()
+	fmt.Printf("%v", drafts)
+
+	os.Exit(1)
+	_, err := secrets.LoadSecrets("config.toml")
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%v", config)
-
-	os.Exit(1)
 	dhl.StartPolling()
 
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
@@ -42,18 +43,17 @@ func main() {
 			}
 
 			draft := lightspeed.WebhookToDraft(orderData)
-			// err = dhl.CreateDraft(&draft, secrets.DhlCredentials())
-			// if err != nil {
-			// 	panic(err)
-			// }
+			err = dhl.CreateDraft(&draft)
+			if err != nil {
+				panic(err)
+			}
 
 			err = database.CreateDraft(&draft)
 			if err != nil {
 				panic(err)
 			}
 
-			// prettyDraft, _ := json.MarshalIndent(draft, "", "  ")
-			// fmt.Print(string(prettyDraft))
+			w.WriteHeader(http.StatusOK)
 		}
 	})
 
