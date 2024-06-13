@@ -1,0 +1,19 @@
+[DHL]
+UserId    = "uuid"
+ApiKey    = "uuid"
+AccountId = ""
+
+[Lightspeed]
+Key    = ""
+Secret = ""
+
+[CompanyInfo]
+Name        = ""
+Street      = ""
+City        = ""
+PostalCode  = ""
+CountryCode = ""
+Number      = ""
+Addition    = ""
+Email       = ""
+PhoneNumber = ""
