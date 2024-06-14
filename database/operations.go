@@ -2,12 +2,11 @@ package database
 
 import (
 	"database/sql"
-	"jorismertz/lightspeed-dhl/dhl"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func CreateDraft(draft *dhl.Draft) error {
+func CreateDraft(dhlDraftId string, lightspeedOrderId string) error {
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return err
@@ -16,7 +15,9 @@ func CreateDraft(draft *dhl.Draft) error {
 	_, err = db.Exec(`
     INSERT INTO orders (createdAt, dhlDraftId, lightspeedOrderId)
     VALUES (datetime('now'), ?, ?);`,
-		draft.Id, draft.OrderReference,
+		dhlDraftId, lightspeedOrderId,
 	)
 	return err
 }
+
+// draft.Id, draft.OrderReference,

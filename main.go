@@ -7,7 +7,6 @@ import (
 	"jorismertz/lightspeed-dhl/database"
 	"jorismertz/lightspeed-dhl/dhl"
 	"jorismertz/lightspeed-dhl/lightspeed"
-	"jorismertz/lightspeed-dhl/secrets"
 	"log"
 	"net/http"
 	"os"
@@ -19,16 +18,9 @@ const (
 
 func main() {
 	database.Initialize()
-
-	drafts := dhl.GetDrafts()
-	fmt.Printf("%v", drafts)
+	dhl.StartPolling()
 
 	os.Exit(1)
-	_, err := secrets.LoadSecrets("config.toml")
-	if err != nil {
-		panic(err)
-	}
-	dhl.StartPolling()
 
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
@@ -48,7 +40,8 @@ func main() {
 				panic(err)
 			}
 
-			err = database.CreateDraft(&draft)
+			err = database.CreateDraft(draft.Id, *draft.OrderReference)
+
 			if err != nil {
 				panic(err)
 			}

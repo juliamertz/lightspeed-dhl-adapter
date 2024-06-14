@@ -41,7 +41,7 @@ func WebhookToDraft(incoming IncomingOrder) dhl.Draft {
 
 		Options: []dhl.Option{
 			{Key: "REFERENCE", Input: incoming.Order.Number},
-			{Key: "PERS_NOTE", Input: "Uw bestelling bij nettenshop.nl is met DHL onderweg! Via de bijgevoegde link kunt u uw pakket volgen. Mocht u vragen hebben, neem dan contact met ons op via de klantenservice. Met vriendelijke groet, Team Nettenshop.nl"},
+			{Key: "PERS_NOTE", Input: *config.CompanyInfo.PersonalNote},
 		},
 		Pieces: []dhl.Piece{
 			{ParcelType: "MEDIUM"},

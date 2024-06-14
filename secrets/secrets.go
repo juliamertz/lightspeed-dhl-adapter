@@ -19,15 +19,16 @@ type Lightspeed struct {
 }
 
 type CompanyInfo struct {
-	Name        string
-	Street      string
-	City        string
-	PostalCode  string
-	CountryCode string
-	Number      string
-	Addition    string
-	Email       string
-	PhoneNumber string
+	Name         string
+	Street       string
+	City         string
+	PostalCode   string
+	CountryCode  string
+	Number       string
+	Addition     string
+	Email        string
+	PhoneNumber  string
+	PersonalNote *string
 }
 
 type Secrets struct {

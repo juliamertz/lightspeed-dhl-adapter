@@ -20,23 +20,22 @@ func CreateDraft(draft *Draft) error {
 	return nil
 }
 
-func GetDrafts() []Draft {
+func GetDrafts() ([]Draft, error) {
 	res, err := Request("/drafts", "GET", nil)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	fmt.Println(string(body))
 	var result []Draft
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return result
+	return result, nil
 }
