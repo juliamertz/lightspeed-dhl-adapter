@@ -5,6 +5,7 @@ type IncomingOrder struct {
 }
 
 // There is a lot more data coming in, but for now this is all we need to parse.
+// https://developers.lightspeedhq.com/ecom/endpoints/order
 type Order struct {
 	Id            int    `json:"id"`
 	Email         string `json:"email"`
@@ -16,6 +17,7 @@ type Order struct {
 	ShipmentTitle string `json:"shipmentTitle"`
 	Number        string `json:"number"`
 	IsCompany     bool   `json:"isCompany"`
+	Status        string `json:"status"` // "cancelled" / "completed_shipped" / "processing_awaiting_shipment"
 
 	AddressBillingStreet    string      `json:"addressBillingStreet"`
 	AddressBillingCity      string      `json:"addressBillingCity"`

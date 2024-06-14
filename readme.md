@@ -1,11 +1,15 @@
+## Idee
+
 Nieuwe lightspeed order  -> Draft aanmaken in DHL
 DHL label geprint -> Order in lightspeed op status "verzonden" zetten
 
-Todo
+## Todo
+
+- [ ] Test potential rate limiting by DHL when fetching labels every poll
+- [ ] Test polling logic with dummy order
 - [ ] Use refresh token instead of authenticating every request
 - [ ] Add error handling/logging
-- [ ] Add DHL polling logic
-    - [x] When a webhook is received, add order to database.
-    - [ ] Poll DHL for all drafts, if any entry in the database is missing here we can assume it's been shipped.
-       - To confirm we can search for shipped orders containing the same reference
-    - [ ] Update the order status in lightspeed
+- [x] Add DHL polling logic
+  - [x] When a webhook is received, add order to database.
+  - [x] Poll DHL for all drafts, if any entry in the database is missing here we can assume it's been shipped.
+  - [x] Update the order status in lightspeed

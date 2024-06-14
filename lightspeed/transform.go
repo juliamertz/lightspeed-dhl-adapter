@@ -2,14 +2,14 @@ package lightspeed
 
 import (
 	"fmt"
+	"jorismertz/lightspeed-dhl/config"
 	"jorismertz/lightspeed-dhl/dhl"
-	"jorismertz/lightspeed-dhl/secrets"
 
 	"github.com/google/uuid"
 )
 
 func WebhookToDraft(incoming IncomingOrder) dhl.Draft {
-	config, err := secrets.LoadSecrets("secrets.toml")
+	conf, err := config.LoadSecrets("config.toml")
 	if err != nil {
 		panic(err)
 	}
@@ -41,13 +41,13 @@ func WebhookToDraft(incoming IncomingOrder) dhl.Draft {
 
 		Options: []dhl.Option{
 			{Key: "REFERENCE", Input: incoming.Order.Number},
-			{Key: "PERS_NOTE", Input: *config.CompanyInfo.PersonalNote},
+			{Key: "PERS_NOTE", Input: *conf.CompanyInfo.PersonalNote},
 		},
 		Pieces: []dhl.Piece{
 			{ParcelType: "MEDIUM"},
 		},
 
-		Shipper:   dhl.ShipperFromConfig(config.CompanyInfo),
-		AccountId: config.Dhl.AccountId,
+		Shipper:   dhl.ShipperFromConfig(conf.CompanyInfo),
+		AccountId: conf.Dhl.AccountId,
 	}
 }

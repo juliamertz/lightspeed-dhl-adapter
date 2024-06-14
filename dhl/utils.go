@@ -4,23 +4,24 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"jorismertz/lightspeed-dhl/secrets"
+	"jorismertz/lightspeed-dhl/config"
 	"net/http"
 )
 
-func Request(path string, method string, body *[]byte) (*http.Response, error) {
-	config, err := secrets.LoadSecrets("config.toml")
+func Request(endpoint string, method string, body *[]byte) (*http.Response, error) {
+	conf, err := config.LoadSecrets("config.toml")
 	if err != nil {
 		return nil, err
 	}
 
-	url := fmt.Sprintf("https://api-gw.dhlparcel.nl%s", path)
+	url := fmt.Sprintf("https://api-gw.dhlparcel.nl/%s", endpoint)
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	accessToken := Authenticate(config.Dhl).AccessToken
+	accessToken := Authenticate(conf.Dhl).AccessToken
+	fmt.Println(accessToken)
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
@@ -32,7 +33,7 @@ func Request(path string, method string, body *[]byte) (*http.Response, error) {
 	return client.Do(req)
 }
 
-func ShipperFromConfig(d secrets.CompanyInfo) Shipper {
+func ShipperFromConfig(d config.CompanyInfo) Shipper {
 	return Shipper{
 		Name: &Name{
 			CompanyName: d.Name,

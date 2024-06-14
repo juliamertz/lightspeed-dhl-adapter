@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"jorismertz/lightspeed-dhl/secrets"
+	"jorismertz/lightspeed-dhl/config"
 	"net/http"
 )
 
@@ -20,7 +20,7 @@ type ApiTokenResponse struct {
 	AccountNumbers         []string `json:"accountNumbers"`
 }
 
-func Authenticate(credentials secrets.Dhl) ApiTokenResponse {
+func Authenticate(credentials config.Dhl) ApiTokenResponse {
 	body, err := json.Marshal(credentials)
 	if err != nil {
 		panic(err)

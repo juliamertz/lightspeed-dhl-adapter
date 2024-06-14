@@ -1,4 +1,4 @@
-package secrets
+package config
 
 import (
 	"errors"
@@ -14,8 +14,9 @@ type Dhl struct {
 }
 
 type Lightspeed struct {
-	Key    string
-	Secret string
+	Key     string
+	Secret  string
+	Cluster string
 }
 
 type CompanyInfo struct {
@@ -52,7 +53,7 @@ func LoadSecrets(path string) (*Secrets, error) {
 		return nil, errors.New("DHL secrets are missing")
 	}
 
-	if secrets.Lightspeed.Key == "" || secrets.Lightspeed.Secret == "" {
+	if secrets.Lightspeed.Key == "" || secrets.Lightspeed.Secret == "" || secrets.Lightspeed.Cluster == "" {
 		return nil, errors.New("Lightspeed secrets are missing")
 	}
 

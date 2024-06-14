@@ -9,6 +9,18 @@ const (
 	dbPath = "./database.db"
 )
 
+type Order struct {
+	DhlDraftId            *string
+	DhlShipmentId         *string
+	LightspeedOrderId     *string
+	LightspeedOrderNumber *string
+	IsProcessed           int
+
+	Id        int
+	CreatedAt string
+	UpdatedAt *string
+}
+
 func Initialize() {
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
@@ -18,14 +30,15 @@ func Initialize() {
 
 	_, err = db.Exec(`
     CREATE TABLE IF NOT EXISTS orders (
-      updatedAt TEXT,
       dhlDraftId TEXT,
       dhlShipmentId TEXT,
       lightspeedOrderId TEXT,
+      lightspeedOrderNumber TEXT,
       isProcessed INT DEFAULT 0,
 
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      createdAt TEXT NOT NULL
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT
     );
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_lightspeedOrderId ON orders (lightspeedOrderId);

@@ -18,9 +18,18 @@ const (
 
 func main() {
 	database.Initialize()
-	dhl.StartPolling()
+	order, err := lightspeed.GetOrder(274989157)
+	if err != nil {
+		panic(err)
+	}
+	pretty, err := json.MarshalIndent(order, "", "    ")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(pretty))
 
 	os.Exit(1)
+	dhl.StartPolling()
 
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
@@ -35,12 +44,13 @@ func main() {
 			}
 
 			draft := lightspeed.WebhookToDraft(orderData)
-			err = dhl.CreateDraft(&draft)
-			if err != nil {
-				panic(err)
-			}
 
-			err = database.CreateDraft(draft.Id, *draft.OrderReference)
+			// err = dhl.CreateDraft(&draft)
+			// if err != nil {
+			// 	panic(err)
+			// }
+
+			err = database.CreateDraft(draft.Id, *draft.OrderReference, orderData.Order.Number)
 
 			if err != nil {
 				panic(err)
