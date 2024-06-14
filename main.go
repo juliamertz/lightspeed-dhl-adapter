@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/rs/zerolog/pkgerrors"
 	"io"
 	"jorismertz/lightspeed-dhl/database"
 	"jorismertz/lightspeed-dhl/dhl"
@@ -20,11 +21,11 @@ const (
 
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	database.Initialize()
 
-	// os.Exit(1)
 	dhl.StartPolling()
 
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
@@ -32,33 +33,33 @@ func main() {
 		if r.Method == "POST" {
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
-				log.Err(err).Msg("Failed to read request body")
+				log.Err(err).Stack().Msg("Failed to read request body")
 				return
 			}
 
 			var orderData lightspeed.IncomingOrder
 			err = json.Unmarshal(body, &orderData)
 			if err != nil {
-				log.Err(err).Msg("Failed to unmarshal request body")
+				log.Err(err).Stack().Msg("Failed to unmarshal request body")
 				return
 			}
 
 			draft, err := dhl.WebhookToDraft(orderData)
 			if err != nil {
-				log.Err(err).Msg("Failed to convert webhook to draft")
+				log.Err(err).Stack().Msg("Failed to convert webhook to draft")
 				return
 			}
 
 			// err = dhl.CreateDraft(&draft)
 			// if err != nil {
-			// log.Fatal().Err(err).Msg("Failed to create draft in DHL")
+			// log.Fatal().Err(err).Stack().Msg("Failed to create draft in DHL")
 			// return
 			// }
 
 			err = database.CreateDraft(draft.Id, *draft.OrderReference, orderData.Order.Number)
 
 			if err != nil {
-				log.Err(err).Msg("Failed to create draft in database")
+				log.Err(err).Stack().Msg("Failed to create draft in database")
 				return
 			}
 

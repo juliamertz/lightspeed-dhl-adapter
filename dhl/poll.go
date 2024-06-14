@@ -18,7 +18,7 @@ func StartPolling() {
 		for {
 			orders, err := database.GetAll()
 			if err != nil {
-				log.Err(err).Msg("Failed to get all orders")
+				log.Err(err).Stack().Msg("Failed to get all orders")
 				time.Sleep(every * time.Second)
 				continue
 			}
@@ -29,7 +29,7 @@ func StartPolling() {
 				fmt.Println(*order.LightspeedOrderNumber)
 				label, err := GetLabelByReference(*order.LightspeedOrderNumber)
 				if err != nil {
-					log.Err(err).Msg("Error getting label by reference")
+					log.Err(err).Stack().Stack().Msg("Error getting label by reference")
 					continue
 				}
 
@@ -37,7 +37,7 @@ func StartPolling() {
 				if label != nil {
 					err := database.SetShipmentId(*order.DhlDraftId, label.shipmentId)
 					if err != nil {
-						log.Err(err).Fields(order).Msg("Error setting shipment id")
+						log.Err(err).Stack().Stack().Fields(order).Msg("Error setting shipment id")
 						continue
 					}
 					// First we have to check check if the data isn't cancelled
