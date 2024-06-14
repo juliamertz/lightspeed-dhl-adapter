@@ -43,7 +43,7 @@ func main() {
 				panic(err)
 			}
 
-			draft := lightspeed.WebhookToDraft(orderData)
+			draft := dhl.WebhookToDraft(orderData)
 
 			// err = dhl.CreateDraft(&draft)
 			// if err != nil {

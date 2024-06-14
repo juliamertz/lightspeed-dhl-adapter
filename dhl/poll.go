@@ -3,10 +3,7 @@ package dhl
 import (
 	"fmt"
 	"jorismertz/lightspeed-dhl/database"
-
-	// "slices"
-
-	// "jorismertz/lightspeed-dhl/database"
+	"jorismertz/lightspeed-dhl/lightspeed"
 	"time"
 )
 
@@ -41,7 +38,7 @@ func StartPolling() {
 					}
 					// Update shipment status in lightspeed
 					// First we have to check check if the data isn't cancelled
-					data, err := lightspeed.GetOrder(order.LightspeedOrderId)
+					data, err := lightspeed.GetOrder(*order.LightspeedOrderId)
 					if err != nil {
 						fmt.Println(err)
 					}
@@ -50,7 +47,7 @@ func StartPolling() {
 						continue
 					} else {
 						// Update status in lightspeed
-						lightspeed.UpdateOrderStatus(order.LightspeedOrderId, "shipped")
+						lightspeed.UpdateOrderStatus(*order.LightspeedOrderId, "shipped")
 						// Set isProcessed in database
 						err := database.SetProcessed(*order.DhlDraftId)
 						if err != nil {

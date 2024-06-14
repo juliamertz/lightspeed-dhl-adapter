@@ -1,34 +1,34 @@
-package lightspeed
+package dhl
 
 import (
 	"fmt"
 	"jorismertz/lightspeed-dhl/config"
-	"jorismertz/lightspeed-dhl/dhl"
+	"jorismertz/lightspeed-dhl/lightspeed"
 
 	"github.com/google/uuid"
 )
 
-func WebhookToDraft(incoming IncomingOrder) dhl.Draft {
+func WebhookToDraft(incoming lightspeed.IncomingOrder) Draft {
 	conf, err := config.LoadSecrets("config.toml")
 	if err != nil {
 		panic(err)
 	}
 
 	orderId := fmt.Sprint(incoming.Order.Id)
-	return dhl.Draft{
+	return Draft{
 		Id:             uuid.New().String(),
 		ShipmentId:     uuid.New().String(),
 		OrderReference: &orderId,
-		Receiver: &dhl.Contact{
+		Receiver: &Contact{
 			Email:       incoming.Order.Email,
 			PhoneNumber: incoming.Order.Phone,
-			Name: &dhl.Name{
+			Name: &Name{
 				FirstName:      incoming.Order.Firstname,
 				LastName:       incoming.Order.Lastname,
 				AdditionalName: incoming.Order.Middlename,
 				CompanyName:    incoming.Order.CompanyName,
 			},
-			Address: &dhl.Address{
+			Address: &Address{
 				IsBusiness:  incoming.Order.IsCompany,
 				Street:      incoming.Order.AddressShippingStreet,
 				City:        incoming.Order.AddressShippingCity,
@@ -39,15 +39,15 @@ func WebhookToDraft(incoming IncomingOrder) dhl.Draft {
 			},
 		},
 
-		Options: []dhl.Option{
+		Options: []Option{
 			{Key: "REFERENCE", Input: incoming.Order.Number},
 			{Key: "PERS_NOTE", Input: *conf.CompanyInfo.PersonalNote},
 		},
-		Pieces: []dhl.Piece{
+		Pieces: []Piece{
 			{ParcelType: "MEDIUM"},
 		},
 
-		Shipper:   dhl.ShipperFromConfig(conf.CompanyInfo),
+		Shipper:   ShipperFromConfig(conf.CompanyInfo),
 		AccountId: conf.Dhl.AccountId,
 	}
 }

@@ -12,7 +12,7 @@ const (
 type Order struct {
 	DhlDraftId            *string
 	DhlShipmentId         *string
-	LightspeedOrderId     *string
+	LightspeedOrderId     *int
 	LightspeedOrderNumber *string
 	IsProcessed           int
 
@@ -32,7 +32,7 @@ func Initialize() {
     CREATE TABLE IF NOT EXISTS orders (
       dhlDraftId TEXT,
       dhlShipmentId TEXT,
-      lightspeedOrderId TEXT,
+      lightspeedOrderId INTEGER,
       lightspeedOrderNumber TEXT,
       isProcessed INT DEFAULT 0,
 
