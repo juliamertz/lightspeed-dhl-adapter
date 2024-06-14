@@ -1,19 +1,21 @@
 [DHL]
 UserId    = "uuid"
 ApiKey    = "uuid"
-AccountId = ""
+AccountId = "0700000"
 
 [Lightspeed]
-Key    = ""
-Secret = ""
+Cluster = "https://api.webshopapp.com/en/"
+Key     = ""
+Secret  = ""
 
 [CompanyInfo]
-Name        = ""
-Street      = ""
-City        = ""
-PostalCode  = ""
-CountryCode = ""
-Number      = ""
-Addition    = ""
-Email       = ""
-PhoneNumber = ""
+Name         = ""
+Street       = ""
+City         = ""
+PostalCode   = ""
+CountryCode  = ""
+Number       = ""
+Addition     = ""
+Email        = ""
+PhoneNumber  = ""
+PersonalNote = "Your order is on it's way!"
