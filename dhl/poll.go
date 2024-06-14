@@ -5,6 +5,8 @@ import (
 	"jorismertz/lightspeed-dhl/database"
 	"jorismertz/lightspeed-dhl/lightspeed"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -16,7 +18,9 @@ func StartPolling() {
 		for {
 			orders, err := database.GetAll()
 			if err != nil {
-				fmt.Println(err)
+				log.Err(err).Msg("Failed to get all orders")
+				time.Sleep(every * time.Second)
+				continue
 			}
 
 			fmt.Println("polling...")
@@ -25,18 +29,17 @@ func StartPolling() {
 				fmt.Println(*order.LightspeedOrderNumber)
 				label, err := GetLabelByReference(*order.LightspeedOrderNumber)
 				if err != nil {
-					fmt.Println(err)
+					log.Err(err).Msg("Error getting label by reference")
+					continue
 				}
 
 				// This means the label has been created thus it's shipped
-				// Update status in lightspeed
 				if label != nil {
-					// set ShipmentId in database
 					err := database.SetShipmentId(*order.DhlDraftId, label.shipmentId)
 					if err != nil {
-						fmt.Println(err)
+						log.Err(err).Fields(order).Msg("Error setting shipment id")
+						continue
 					}
-					// Update shipment status in lightspeed
 					// First we have to check check if the data isn't cancelled
 					data, err := lightspeed.GetOrder(*order.LightspeedOrderId)
 					if err != nil {

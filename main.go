@@ -35,6 +35,7 @@ func main() {
 				log.Err(err).Msg("Failed to read request body")
 				return
 			}
+
 			var orderData lightspeed.IncomingOrder
 			err = json.Unmarshal(body, &orderData)
 			if err != nil {
@@ -42,7 +43,11 @@ func main() {
 				return
 			}
 
-			draft := dhl.WebhookToDraft(orderData)
+			draft, err := dhl.WebhookToDraft(orderData)
+			if err != nil {
+				log.Err(err).Msg("Failed to convert webhook to draft")
+				return
+			}
 
 			// err = dhl.CreateDraft(&draft)
 			// if err != nil {

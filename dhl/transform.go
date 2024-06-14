@@ -8,14 +8,14 @@ import (
 	"github.com/google/uuid"
 )
 
-func WebhookToDraft(incoming lightspeed.IncomingOrder) Draft {
+func WebhookToDraft(incoming lightspeed.IncomingOrder) (*Draft, error) {
 	conf, err := config.LoadSecrets("config.toml")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	orderId := fmt.Sprint(incoming.Order.Id)
-	return Draft{
+	return &Draft{
 		Id:             uuid.New().String(),
 		ShipmentId:     uuid.New().String(),
 		OrderReference: &orderId,
@@ -49,5 +49,5 @@ func WebhookToDraft(incoming lightspeed.IncomingOrder) Draft {
 
 		Shipper:   ShipperFromConfig(conf.CompanyInfo),
 		AccountId: conf.Dhl.AccountId,
-	}
+	}, nil
 }

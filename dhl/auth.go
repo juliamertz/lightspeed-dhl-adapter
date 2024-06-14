@@ -20,45 +20,45 @@ type ApiTokenResponse struct {
 	AccountNumbers         []string `json:"accountNumbers"`
 }
 
-func Authenticate(credentials config.Dhl) ApiTokenResponse {
+func Authenticate(credentials config.Dhl) (*ApiTokenResponse, error) {
 	body, err := json.Marshal(credentials)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	url := fmt.Sprintf("%s/authenticate/api-key", endpoint)
 	res, err := http.Post(url, "application/json", bytes.NewReader((body)))
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var response ApiTokenResponse
 	err = json.NewDecoder(res.Body).Decode(&response)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return response
+	return &response, nil
 }
 
 // Not tested yet
-func RefreshToken(token string) ApiTokenResponse {
-	url := fmt.Sprintf("%s/authenticate/refresh-token", endpoint)
-	requestData := map[string]string{"refreshToken": token}
-	body, err := json.Marshal(requestData)
-	if err != nil {
-		panic(err)
-	}
-	req, err := http.Post(url, "application/json", bytes.NewReader(body))
-	if err != nil {
-		panic(err)
-	}
-
-	var response ApiTokenResponse
-	err = json.NewDecoder(req.Body).Decode(&response)
-	if err != nil {
-		panic(err)
-	}
-
-	return response
-}
+// func RefreshToken(token string) ApiTokenResponse {
+// 	url := fmt.Sprintf("%s/authenticate/refresh-token", endpoint)
+// 	requestData := map[string]string{"refreshToken": token}
+// 	body, err := json.Marshal(requestData)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	req, err := http.Post(url, "application/json", bytes.NewReader(body))
+// 	if err != nil {
+// 		panic(err)
+// 	}
+//
+// 	var response ApiTokenResponse
+// 	err = json.NewDecoder(req.Body).Decode(&response)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+//
+// 	return response
+// }
