@@ -65,6 +65,11 @@ func GetLabelByReference(reference string) (*Label, error) {
 		return nil, err
 	}
 
+	if res.StatusCode == 404 {
+		log.Debug().Str("Order reference", reference).Msg("No label found")
+		return nil, nil
+	}
+
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		log.Err(err).Stack().Msg("Error reading response body")
