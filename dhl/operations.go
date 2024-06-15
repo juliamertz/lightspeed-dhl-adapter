@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+
+	"github.com/rs/zerolog/log"
 )
 
 func CreateDraft(draft *Draft) error {
@@ -59,21 +61,25 @@ func GetLabelByReference(reference string) (*Label, error) {
 	url := fmt.Sprintf("/labels?orderReferenceFilter=%s", reference)
 	res, err := Request(url, "GET", nil)
 	if err != nil {
+		log.Err(err).Stack().Msg("Error getting label by reference")
 		return nil, err
 	}
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
+		log.Err(err).Stack().Msg("Error reading response body")
 		return nil, err
 	}
 
 	var result []Label
 	err = json.Unmarshal(body, &result)
 	if err != nil {
+		log.Err(err).Str("body", string(body)).Stack().Msg("Error unmarshalling response body")
 		return nil, err
 	}
 
 	if len(result) == 0 {
+		log.Debug().Str("Order reference", reference).Msg("No label found")
 		return nil, nil
 	}
 
