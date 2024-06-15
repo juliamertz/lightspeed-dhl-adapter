@@ -19,7 +19,7 @@ func SetupLogger() {
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 
 	if *conf.Options.Debug {
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+		zerolog.SetGlobalLevel(zerolog.TraceLevel)
 	} else {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
