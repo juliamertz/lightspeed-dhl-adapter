@@ -19,3 +19,7 @@ Addition     = ""
 Email        = ""
 PhoneNumber  = ""
 PersonalNote = "Your order is on it's way!"
+
+[Options]
+DryRun = false
+Port   = 3000
