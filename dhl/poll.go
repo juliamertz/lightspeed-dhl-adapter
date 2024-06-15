@@ -10,17 +10,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const (
-	every = 5 // minutes
-)
-
 func StartPolling(conf *config.Secrets) {
+	sleepDuration := time.Duration(*conf.Options.PollingInterval) * time.Minute
 	go func() {
 		for {
 			orders, err := database.GetAll()
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to get all orders")
-				time.Sleep(every * time.Second)
+				time.Sleep(sleepDuration)
 				continue
 			}
 
@@ -71,7 +68,7 @@ func StartPolling(conf *config.Secrets) {
 				}
 			}
 
-			time.Sleep(every * time.Second)
+			time.Sleep(sleepDuration)
 		}
 	}()
 }

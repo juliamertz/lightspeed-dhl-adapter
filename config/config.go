@@ -33,8 +33,9 @@ type CompanyInfo struct {
 }
 
 type Options struct {
-	DryRun *bool
-	Port   *int
+	DryRun          *bool
+	Port            *int
+	PollingInterval *int
 }
 
 type Secrets struct {
@@ -63,6 +64,11 @@ func LoadSecrets(path string) (*Secrets, error) {
 	if secrets.Options.Port == nil {
 		port := 8080
 		secrets.Options.Port = &port
+	}
+
+	if secrets.Options.PollingInterval == nil {
+		interval := 15
+		secrets.Options.PollingInterval = &interval
 	}
 
 	if secrets.Dhl.UserId == "" || secrets.Dhl.ApiKey == "" || secrets.Dhl.AccountId == "" {

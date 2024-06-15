@@ -21,6 +21,7 @@ func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+
 	conf, err := config.LoadSecrets("config.toml")
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to load secrets")
