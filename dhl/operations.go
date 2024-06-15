@@ -12,11 +12,10 @@ func CreateDraft(draft *Draft) error {
 	if err != nil {
 		return err
 	}
-	res, err := Request("/drafts", "POST", &body)
+	_, err = Request("/drafts", "POST", &body)
 	if err != nil {
 		return err
 	}
-	fmt.Println(res)
 	return nil
 }
 

@@ -6,6 +6,8 @@ import (
 	"io"
 	"jorismertz/lightspeed-dhl/config"
 	"net/http"
+
+	"github.com/rs/zerolog/log"
 )
 
 func Request(endpoint string, method string, body *[]byte) (*http.Response, error) {
@@ -26,7 +28,6 @@ func Request(endpoint string, method string, body *[]byte) (*http.Response, erro
 		return nil, err
 	}
 
-	fmt.Println(authResponse)
 	req.Header.Set("Authorization", "Bearer "+authResponse.AccessToken)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
@@ -35,7 +36,16 @@ func Request(endpoint string, method string, body *[]byte) (*http.Response, erro
 	}
 
 	client := &http.Client{}
-	return client.Do(req)
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode == 429 {
+		log.Warn().Msg("Rate limit reached")
+	}
+
+	return res, nil
 }
 
 func ShipperFromConfig(d config.CompanyInfo) Shipper {

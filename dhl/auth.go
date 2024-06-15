@@ -34,25 +34,3 @@ func Authenticate(tokenResponse *ApiTokenResponse, credentials config.Dhl) error
 
 	return json.NewDecoder(res.Body).Decode(&tokenResponse)
 }
-
-// Not tested yet
-func RefreshToken(token *ApiTokenResponse) error {
-	requestData := map[string]string{"refreshToken": token.RefreshToken}
-	body, err := json.Marshal(requestData)
-	if err != nil {
-		return err
-	}
-
-	url := fmt.Sprintf("%s/authenticate/refresh-token", endpoint)
-	req, err := http.Post(url, "application/json", bytes.NewReader(body))
-	if err != nil {
-		return err
-	}
-
-	err = json.NewDecoder(req.Body).Decode(&token)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}

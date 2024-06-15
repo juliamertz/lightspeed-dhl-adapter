@@ -7,7 +7,6 @@ DHL label geprint -> Order in lightspeed op status "verzonden" zetten
 
 - [ ] Test potential rate limiting by DHL when fetching labels every poll
 - [ ] Test polling logic with dummy order
-- [ ] Use refresh token instead of authenticating every request
 - [x] Add error handling/logging
 - [x] Add DHL polling logic
   - [x] When a webhook is received, add order to database.
