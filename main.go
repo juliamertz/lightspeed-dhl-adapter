@@ -56,7 +56,7 @@ func main() {
 					return
 				}
 
-				log.Info().Str("Order reference", *draft.OrderReference).Msg("Draft created in DHL")
+				log.Info().Str("Order reference", orderData.Order.Number).Msg("Draft created in DHL")
 			}
 
 			err = database.CreateDraft(draft.Id, *draft.OrderReference, orderData.Order.Number)
@@ -65,7 +65,7 @@ func main() {
 				return
 			}
 
-			log.Info().Str("Order reference", *draft.OrderReference).Msg("Draft created in database")
+			log.Info().Str("Order reference", orderData.Order.Number).Msg("Draft created in database")
 
 			w.WriteHeader(http.StatusOK)
 		}

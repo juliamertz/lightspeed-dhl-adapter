@@ -5,7 +5,7 @@ DHL label geprint -> Order in lightspeed op status "verzonden" zetten
 
 ## Todo
 
-- [ ] Test potential rate limiting by DHL when fetching labels every poll
+- [x] Test potential rate limiting by DHL when fetching labels every poll
 - [ ] Test polling logic with dummy order
 - [x] Add error handling/logging
 - [x] Add DHL polling logic
