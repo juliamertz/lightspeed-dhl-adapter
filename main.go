@@ -52,7 +52,7 @@ func main() {
 
 			// err = dhl.CreateDraft(&draft)
 			// if err != nil {
-			// log.Fatal().Err(err).Stack().Msg("Failed to create draft in DHL")
+			// log.Err(err).Stack().Msg("Failed to create draft in DHL")
 			// return
 			// }
 

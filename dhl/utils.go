@@ -20,10 +20,12 @@ func Request(endpoint string, method string, body *[]byte) (*http.Response, erro
 		return nil, err
 	}
 
-	authResponse, err := Authenticate(conf.Dhl)
+	var authResponse ApiTokenResponse
+	err = Authenticate(&authResponse, conf.Dhl)
 	if err != nil {
 		return nil, err
 	}
+
 	fmt.Println(authResponse)
 	req.Header.Set("Authorization", "Bearer "+authResponse.AccessToken)
 	req.Header.Set("Content-Type", "application/json")
