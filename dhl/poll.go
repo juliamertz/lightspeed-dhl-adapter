@@ -2,6 +2,7 @@ package dhl
 
 import (
 	"fmt"
+	"jorismertz/lightspeed-dhl/config"
 	"jorismertz/lightspeed-dhl/database"
 	"jorismertz/lightspeed-dhl/lightspeed"
 	"time"
@@ -13,7 +14,7 @@ const (
 	every = 5 // minutes
 )
 
-func StartPolling() {
+func StartPolling(conf *config.Secrets) {
 	go func() {
 		for {
 			orders, err := database.GetAll()
@@ -26,40 +27,48 @@ func StartPolling() {
 			fmt.Println("polling...")
 			for i := range orders {
 				order := orders[i]
-				fmt.Println(*order.LightspeedOrderNumber)
+
 				label, err := GetLabelByReference(*order.LightspeedOrderNumber)
 				if err != nil {
-					log.Err(err).Stack().Stack().Msg("Error getting label by reference")
+					log.Err(err).Stack().Msg("Error getting label by reference")
 					continue
 				}
 
-				// This means the label has been created thus it's shipped
+				// If a label has been created for our order we can assume this means it has been shipped by DHL.
+				// We check for a cancelled state in lightspeed to make sure of this
 				if label != nil {
 					err := database.SetShipmentId(*order.DhlDraftId, label.shipmentId)
 					if err != nil {
-						log.Err(err).Stack().Stack().Fields(order).Msg("Error setting shipment id")
+						log.Err(err).Stack().Fields(order).Msg("Error setting shipment id")
 						continue
 					}
-					// First we have to check check if the data isn't cancelled
+
 					data, err := lightspeed.GetOrder(*order.LightspeedOrderId)
 					if err != nil {
-						fmt.Println(err)
+						log.Err(err).Stack().Fields(order).Msg("Error getting order")
+						continue
 					}
+
 					if data.Order.Status == "cancelled" {
-						fmt.Println("Order is cancelled, not updating status")
+						log.Info().Str("Order reference", *order.LightspeedOrderNumber).Msg("Order is cancelled, not updating status")
 						continue
 					} else {
 						// Update status in lightspeed
-						lightspeed.UpdateOrderStatus(*order.LightspeedOrderId, "shipped")
+						if !*conf.Options.DryRun {
+							err := lightspeed.UpdateOrderStatus(*order.LightspeedOrderId, "shipped")
+							if err != nil {
+								log.Err(err).Stack().Fields(order).Msg("Error updating order status")
+								continue
+							}
+						}
 						// Set isProcessed in database
 						err := database.SetProcessed(*order.DhlDraftId)
 						if err != nil {
-							fmt.Println(err)
+							log.Err(err).Stack().Fields(order).Msg("Error setting processed")
+							continue
 						}
 					}
 				}
-
-				fmt.Printf("%v", label)
 			}
 
 			time.Sleep(every * time.Second)

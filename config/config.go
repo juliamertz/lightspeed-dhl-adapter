@@ -32,10 +32,15 @@ type CompanyInfo struct {
 	PersonalNote *string
 }
 
+type Options struct {
+	DryRun *bool
+}
+
 type Secrets struct {
 	Dhl         Dhl
 	Lightspeed  Lightspeed
 	CompanyInfo CompanyInfo
+	Options     *Options
 }
 
 func LoadSecrets(path string) (*Secrets, error) {
@@ -47,6 +52,11 @@ func LoadSecrets(path string) (*Secrets, error) {
 	err = toml.Unmarshal(data, &secrets)
 	if err != nil {
 		return nil, err
+	}
+
+	if secrets.Options.DryRun == nil {
+		dryRun := false
+		secrets.Options.DryRun = &dryRun
 	}
 
 	if secrets.Dhl.UserId == "" || secrets.Dhl.ApiKey == "" || secrets.Dhl.AccountId == "" {
