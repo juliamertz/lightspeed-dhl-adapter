@@ -17,10 +17,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const (
-	port = 8080
-)
-
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
@@ -75,6 +71,6 @@ func main() {
 		}
 	})
 
-	log.Info().Int("Port", port).Msg("Starting server")
-	_ = http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	log.Info().Int("Port", *conf.Options.Port).Msg("Starting server")
+	_ = http.ListenAndServe(fmt.Sprintf(":%d", *conf.Options.Port), nil)
 }
