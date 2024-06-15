@@ -1,3 +1,5 @@
 config.toml
 database.db
 req.sh
+log.txt
+lightspeed-dhl

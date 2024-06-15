@@ -3,24 +3,18 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"io"
 	"jorismertz/lightspeed-dhl/config"
 	"jorismertz/lightspeed-dhl/database"
 	"jorismertz/lightspeed-dhl/dhl"
 	"jorismertz/lightspeed-dhl/lightspeed"
+	"jorismertz/lightspeed-dhl/logger"
 	"net/http"
-	"os"
-
-	"github.com/rs/zerolog/pkgerrors"
-
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 func main() {
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	logger.SetupLogger()
 
 	conf, err := config.LoadSecrets("config.toml")
 	if err != nil {
@@ -53,20 +47,25 @@ func main() {
 				return
 			}
 
+			log.Info().Str("Order reference", orderData.Order.Number).Msg("Received order")
+
 			if !*conf.Options.DryRun {
 				err = dhl.CreateDraft(draft)
 				if err != nil {
 					log.Err(err).Stack().Msg("Failed to create draft in DHL")
 					return
 				}
+
+				log.Info().Str("Order reference", *draft.OrderReference).Msg("Draft created in DHL")
 			}
 
 			err = database.CreateDraft(draft.Id, *draft.OrderReference, orderData.Order.Number)
-
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to create draft in database")
 				return
 			}
+
+			log.Info().Str("Order reference", *draft.OrderReference).Msg("Draft created in database")
 
 			w.WriteHeader(http.StatusOK)
 		}

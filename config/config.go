@@ -36,6 +36,8 @@ type Options struct {
 	DryRun          *bool
 	Port            *int
 	PollingInterval *int
+	Environment     *string
+	Debug           *bool
 }
 
 type Secrets struct {
@@ -64,6 +66,18 @@ func LoadSecrets(path string) (*Secrets, error) {
 	if secrets.Options.Port == nil {
 		port := 8080
 		secrets.Options.Port = &port
+	}
+
+	if secrets.Options.Debug == nil {
+		debug := false
+		secrets.Options.Debug = &debug
+	}
+
+	if secrets.Options.Environment == nil {
+		env := "production"
+		secrets.Options.Environment = &env
+	} else if *secrets.Options.Environment != "production" && *secrets.Options.Environment != "development" {
+		panic("Invalid environment specified in config.toml, must be either 'production' or 'development'")
 	}
 
 	if secrets.Options.PollingInterval == nil {

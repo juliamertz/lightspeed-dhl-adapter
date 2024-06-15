@@ -21,5 +21,7 @@ PhoneNumber  = ""
 PersonalNote = "Your order is on it's way!"
 
 [Options]
-DryRun = false
-Port   = 3000
+DryRun      = false
+Port        = 3000
+Environment = "development"
+Debug       = true
