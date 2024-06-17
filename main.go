@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"github.com/rs/zerolog/log"
 	"io"
-	"jorismertz/lightspeed-dhl/config"
-	"jorismertz/lightspeed-dhl/database"
-	"jorismertz/lightspeed-dhl/dhl"
-	"jorismertz/lightspeed-dhl/lightspeed"
-	"jorismertz/lightspeed-dhl/logger"
+	"lightspeed-dhl/config"
+	"lightspeed-dhl/database"
+	"lightspeed-dhl/dhl"
+	"lightspeed-dhl/lightspeed"
+	"lightspeed-dhl/logger"
 	"net/http"
 )
 

@@ -1,4 +1,4 @@
-module jorismertz/lightspeed-dhl
+module lightspeed-dhl
 
 go 1.22.4
 

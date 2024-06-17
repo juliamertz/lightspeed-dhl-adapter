@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"jorismertz/lightspeed-dhl/config"
+	"lightspeed-dhl/config"
 	"net/http"
 )
 

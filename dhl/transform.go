@@ -2,8 +2,8 @@ package dhl
 
 import (
 	"fmt"
-	"jorismertz/lightspeed-dhl/config"
-	"jorismertz/lightspeed-dhl/lightspeed"
+	"lightspeed-dhl/config"
+	"lightspeed-dhl/lightspeed"
 
 	"github.com/google/uuid"
 )

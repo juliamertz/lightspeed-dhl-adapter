@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"jorismertz/lightspeed-dhl/config"
+	"lightspeed-dhl/config"
 	"net/http"
 )
 

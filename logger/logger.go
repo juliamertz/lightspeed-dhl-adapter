@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"jorismertz/lightspeed-dhl/config"
+	"lightspeed-dhl/config"
 	"os"
 
 	"github.com/rs/zerolog"

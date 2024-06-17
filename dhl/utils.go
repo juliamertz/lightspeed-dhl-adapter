@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"jorismertz/lightspeed-dhl/config"
+	"lightspeed-dhl/config"
 	"net/http"
 
 	"github.com/rs/zerolog/log"

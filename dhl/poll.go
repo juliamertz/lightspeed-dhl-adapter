@@ -1,9 +1,9 @@
 package dhl
 
 import (
-	"jorismertz/lightspeed-dhl/config"
-	"jorismertz/lightspeed-dhl/database"
-	"jorismertz/lightspeed-dhl/lightspeed"
+	"lightspeed-dhl/config"
+	"lightspeed-dhl/database"
+	"lightspeed-dhl/lightspeed"
 	"time"
 
 	"github.com/rs/zerolog/log"
