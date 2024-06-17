@@ -3,40 +3,40 @@ package dhl
 // thank you chatgpt
 
 type Draft struct {
-	Id                 string              `json:"id"`
-	ShipmentId         string              `json:"shipmentId"`
-	OrderReference     *string             `json:"orderReference"`
-	Receiver           *Contact            `json:"receiver"`
-	BccEmails          []string            `json:"bccEmails"`
-	Shipper            Shipper             `json:"shipper"`
-	AccountId          string              `json:"accountId"`
-	Options            []Option            `json:"options"`
-	OnBehalfOf         *Shipper            `json:"onBehalfOf"`
-	Product            string              `json:"product"`
-	CustomsDeclaration *CustomsDeclaration `json:"customsDeclaration"`
-	ReturnLabel        bool                `json:"returnLabel"`
-	Pieces             []Piece             `json:"pieces"`
-	DeliveryArea       *DeliveryArea       `json:"deliveryArea"`
-	Metadata           *Metadata           `json:"metadata"`
+	Id                 string             `json:"id"`
+	ShipmentId         string             `json:"shipmentId"`
+	OrderReference     string             `json:"orderReference"`
+	Receiver           Contact            `json:"receiver"`
+	BccEmails          []string           `json:"bccEmails"`
+	Shipper            Shipper            `json:"shipper"`
+	AccountId          string             `json:"accountId"`
+	Options            []Option           `json:"options"`
+	OnBehalfOf         Shipper            `json:"onBehalfOf"`
+	Product            string             `json:"product"`
+	CustomsDeclaration CustomsDeclaration `json:"customsDeclaration"`
+	ReturnLabel        bool               `json:"returnLabel"`
+	Pieces             []Piece            `json:"pieces"`
+	DeliveryArea       DeliveryArea       `json:"deliveryArea"`
+	Metadata           Metadata           `json:"metadata"`
 }
 
 type Contact struct {
-	Name        *Name    `json:"name"`
-	Address     *Address `json:"address"`
-	Email       string   `json:"email"`
-	PhoneNumber string   `json:"phoneNumber"`
-	VatNumber   *string  `json:"vatNumber"`
-	EoriNumber  *string  `json:"eoriNumber"`
+	Name        Name    `json:"name"`
+	Address     Address `json:"address"`
+	Email       string  `json:"email"`
+	PhoneNumber string  `json:"phoneNumber"`
+	VatNumber   string  `json:"vatNumber"`
+	EoriNumber  string  `json:"eoriNumber"`
 }
 
 type Shipper struct {
-	Name        *Name    `json:"name"`
-	Address     *Address `json:"address"`
-	Email       string   `json:"email"`
-	PhoneNumber string   `json:"phoneNumber"`
-	VatNumber   string   `json:"vatNumber"`
-	EoriNumber  string   `json:"eoriNumber"`
-	RexNumber   string   `json:"rexNumber"`
+	Name        Name    `json:"name"`
+	Address     Address `json:"address"`
+	Email       string  `json:"email"`
+	PhoneNumber string  `json:"phoneNumber"`
+	VatNumber   string  `json:"vatNumber"`
+	EoriNumber  string  `json:"eoriNumber"`
+	RexNumber   string  `json:"rexNumber"`
 }
 
 type Name struct {
@@ -76,8 +76,8 @@ type CustomsDeclaration struct {
 	IncoTermsCity              string        `json:"incoTermsCity"`
 	SenderInboundVatNumber     string        `json:"senderInboundVatNumber"`
 	AttachmentIds              []string      `json:"attachmentIds"`
-	ShippingFee                *ShippingFee  `json:"shippingFee"`
-	ImporterOfRecord           *Importer     `json:"importerOfRecord"`
+	ShippingFee                ShippingFee   `json:"shippingFee"`
+	ImporterOfRecord           Importer      `json:"importerOfRecord"`
 	DefermentAccountVat        string        `json:"defermentAccountVat"`
 	DefermentAccountDuties     string        `json:"defermentAccountDuties"`
 	VatReverseCharge           bool          `json:"vatReverseCharge"`
@@ -98,12 +98,12 @@ type ShippingFee struct {
 }
 
 type Importer struct {
-	Name        *Name    `json:"name"`
-	Address     *Address `json:"address"`
-	Email       string   `json:"email"`
-	PhoneNumber string   `json:"phoneNumber"`
-	VatNumber   string   `json:"vatNumber"`
-	EoriNumber  string   `json:"eoriNumber"`
+	Name        Name    `json:"name"`
+	Address     Address `json:"address"`
+	Email       string  `json:"email"`
+	PhoneNumber string  `json:"phoneNumber"`
+	VatNumber   string  `json:"vatNumber"`
+	EoriNumber  string  `json:"eoriNumber"`
 }
 
 type Piece struct {

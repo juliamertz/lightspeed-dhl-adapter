@@ -18,17 +18,17 @@ func WebhookToDraft(incoming lightspeed.IncomingOrder) (*Draft, error) {
 	return &Draft{
 		Id:             uuid.New().String(),
 		ShipmentId:     uuid.New().String(),
-		OrderReference: &orderId,
-		Receiver: &Contact{
+		OrderReference: orderId,
+		Receiver: Contact{
 			Email:       incoming.Order.Email,
 			PhoneNumber: incoming.Order.Phone,
-			Name: &Name{
+			Name: Name{
 				FirstName:      incoming.Order.Firstname,
 				LastName:       incoming.Order.Lastname,
 				AdditionalName: incoming.Order.Middlename,
 				CompanyName:    incoming.Order.CompanyName,
 			},
-			Address: &Address{
+			Address: Address{
 				IsBusiness:  incoming.Order.IsCompany,
 				Street:      incoming.Order.AddressShippingStreet,
 				City:        incoming.Order.AddressShippingCity,

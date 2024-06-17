@@ -50,10 +50,10 @@ func Request(endpoint string, method string, body *[]byte) (*http.Response, erro
 
 func ShipperFromConfig(d config.CompanyInfo) Shipper {
 	return Shipper{
-		Name: &Name{
+		Name: Name{
 			CompanyName: d.Name,
 		},
-		Address: &Address{
+		Address: Address{
 			IsBusiness:  true,
 			Street:      d.Street,
 			Number:      d.Number,

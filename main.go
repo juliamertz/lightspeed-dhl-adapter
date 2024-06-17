@@ -59,7 +59,7 @@ func main() {
 				log.Info().Str("Order reference", orderData.Order.Number).Msg("Draft created in DHL")
 			}
 
-			err = database.CreateDraft(draft.Id, *draft.OrderReference, orderData.Order.Number)
+			err = database.CreateDraft(draft.Id, draft.OrderReference, orderData.Order.Number)
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to create draft in database")
 				return
