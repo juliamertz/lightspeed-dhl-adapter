@@ -25,3 +25,4 @@ DryRun      = false
 Port        = 3000
 Environment = "development"
 Debug       = true
+PollingInterval = 5 
