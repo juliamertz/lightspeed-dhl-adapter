@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"io"
 	"lightspeed-dhl/config"
 	"lightspeed-dhl/database"
@@ -11,6 +10,8 @@ import (
 	"lightspeed-dhl/lightspeed"
 	"lightspeed-dhl/logger"
 	"net/http"
+
+	"github.com/rs/zerolog/log"
 )
 
 func main() {
@@ -41,13 +42,15 @@ func main() {
 				return
 			}
 
+			log.Debug().Interface("Order data", orderData).Msg("Received order data from webhook")
+
 			draft, err := dhl.WebhookToDraft(orderData)
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to convert webhook to draft")
 				return
 			}
 
-			log.Info().Str("Order reference", orderData.Order.Number).Msg("Received order")
+			log.Debug().Interface("Draft", draft).Msg("Transformed order data to draft")
 
 			if !*conf.Options.DryRun {
 				err = dhl.CreateDraft(draft)
