@@ -41,14 +41,14 @@ func SetProcessed(dhlDraftId string) error {
 	return err
 }
 
-func GetAll() ([]Order, error) {
+func GetUnprocessed() ([]Order, error) {
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
-	rows, err := db.Query(`SELECT * FROM orders;`)
+	rows, err := db.Query(`SELECT * FROM orders WHERE isProcessed = 0;`)
 	if err != nil {
 		return nil, err
 	}

@@ -13,7 +13,7 @@ func StartPolling(conf *config.Secrets) {
 	sleepDuration := time.Duration(*conf.Options.PollingInterval) * time.Minute
 	go func() {
 		for {
-			orders, err := database.GetAll()
+			orders, err := database.GetUnprocessed()
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to get all orders")
 				time.Sleep(sleepDuration)
