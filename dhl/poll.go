@@ -39,11 +39,11 @@ func StartPolling(conf *config.Secrets) {
 				}
 
 				logger.Debug().Interface("Label", label).Msg("Label found")
-				err = database.SetShipmentId(*order.DhlDraftId, label.shipmentId)
-				if err != nil {
-					logger.Err(err).Msg("Error setting shipment id")
-					continue
-				}
+				// err = database.SetShipmentId(*order.DhlDraftId, label.shipmentId)
+				// if err != nil {
+				// 	logger.Err(err).Msg("Error setting shipment id")
+				// 	continue
+				// }
 
 				data, err := lightspeed.GetOrder(*order.LightspeedOrderId)
 				if err != nil {
