@@ -57,8 +57,8 @@ type Label struct {
 	accountNumber  string
 }
 
-func GetLabelByReference(reference string) (*Label, error) {
-	url := fmt.Sprintf("/labels?orderReferenceFilter=%s", reference)
+func GetLabelByReference(reference int) (*Label, error) {
+	url := fmt.Sprintf("labels?orderReferenceFilter=%v", reference)
 	res, err := Request(url, "GET", nil)
 	if err != nil {
 		log.Err(err).Stack().Msg("Error getting label by reference")
@@ -66,7 +66,7 @@ func GetLabelByReference(reference string) (*Label, error) {
 	}
 
 	if res.StatusCode == 404 {
-		log.Debug().Str("Order reference", reference).Msg("No label found")
+		log.Debug().Int("Order reference", reference).Msg("No label found")
 		return nil, nil
 	}
 
@@ -84,7 +84,7 @@ func GetLabelByReference(reference string) (*Label, error) {
 	}
 
 	if len(result) == 0 {
-		log.Debug().Str("Order reference", reference).Msg("No label found")
+		log.Debug().Int("Order reference", reference).Msg("No label found")
 		return nil, nil
 	}
 
