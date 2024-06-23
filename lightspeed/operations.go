@@ -37,10 +37,12 @@ func UpdateOrderStatus(id int, status string) error {
 		return err
 	}
 
-	_, err = Request("orders/"+fmt.Sprint(id)+".json", "PUT", &body)
+	res, err := Request("orders/"+fmt.Sprint(id)+".json", "PUT", &body)
 	if err != nil {
 		return err
 	}
+
+	fmt.Println(res)
 
 	return nil
 }
