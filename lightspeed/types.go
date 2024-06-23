@@ -17,7 +17,10 @@ type Order struct {
 	ShipmentTitle string `json:"shipmentTitle"`
 	Number        string `json:"number"`
 	IsCompany     bool   `json:"isCompany"`
-	Status        string `json:"status"` // "cancelled" / "completed_shipped" / "processing_awaiting_shipment"
+
+	Status string `json:"status"` // "cancelled" / "completed_shipped" / "processing_awaiting_shipment"
+	// PaymentStatus  string `json:"paymentStatus"`  // "paid" / "not_paid"
+	ShipmentStatus string `json:"shipmentStatus"` // "shipped" / "not_shipped"
 
 	AddressBillingStreet    string      `json:"addressBillingStreet"`
 	AddressBillingCity      string      `json:"addressBillingCity"`

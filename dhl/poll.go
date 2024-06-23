@@ -60,7 +60,10 @@ func StartPolling(conf *config.Secrets) {
 				}
 
 				if !*conf.Options.DryRun {
-					err := lightspeed.UpdateOrderStatus(*order.LightspeedOrderId, "shipped")
+					err := lightspeed.UpdateOrderStatus(*order.LightspeedOrderId, lightspeed.UpdateOrderData{
+						Status:         "completed_shipped",
+						ShipmentStatus: "shipped",
+					})
 					if err != nil {
 						logger.Err(err).Msg("Error updating order status")
 						continue

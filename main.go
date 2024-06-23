@@ -28,7 +28,6 @@ func main() {
 	// 	log.Fatal().Err(err).Msg("Failed to authenticate")
 	// }
 	// fmt.Println(token)
-	// os.Exit(1)
 
 	database.Initialize()
 

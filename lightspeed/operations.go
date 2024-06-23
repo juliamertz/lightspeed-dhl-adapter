@@ -25,14 +25,19 @@ func GetOrder(id int) (*IncomingOrder, error) {
 	return &order, nil
 }
 
-func UpdateOrderStatus(id int, status string) error {
-	order, err := GetOrder(id)
-	if err != nil {
-		return err
-	}
+type UpdateOrderData struct {
+	Status         string `json:"status"`
+	ShipmentStatus string `json:"shipmentStatus"`
+}
 
-	order.Order.Status = status
-	body, err := json.Marshal(order)
+type RequestBody struct {
+	Order UpdateOrderData `json:"order"`
+}
+
+func UpdateOrderStatus(id int, data UpdateOrderData) error {
+	body, err := json.Marshal(RequestBody{
+		Order: data,
+	})
 	if err != nil {
 		return err
 	}
@@ -42,7 +47,10 @@ func UpdateOrderStatus(id int, status string) error {
 		return err
 	}
 
-	fmt.Println(res)
+	body, err = io.ReadAll(res.Body)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
