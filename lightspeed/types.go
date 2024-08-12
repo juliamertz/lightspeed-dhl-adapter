@@ -40,3 +40,18 @@ type Order struct {
 type CountryCode struct {
 	Code string `json:"code"`
 }
+
+type Variant struct {
+	StockLevel int `json:"stockLevel"`
+	StockAlert int `json:"stockAlert"`
+}
+
+type Product struct {
+	Id       int                `json:"id"`
+	Title    string             `json:"title"`
+	Variants map[string]Variant `json:"variants"`
+}
+
+type CatalogResponse struct {
+	Products []Product `json:"products"`
+}

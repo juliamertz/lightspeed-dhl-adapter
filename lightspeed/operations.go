@@ -25,6 +25,42 @@ func GetOrder(id int) (*IncomingOrder, error) {
 	return &order, nil
 }
 
+func GetStockUnderThreshold() (*[]Product, error) {
+	res, err := Request("catalog.json", "GET", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+	var data CatalogResponse
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	i := 0
+	for _, product := range data.Products {
+		for _, variant := range product.Variants {
+			if variant.StockAlert <= 0 {
+				continue
+			}
+
+			if variant.StockLevel <= variant.StockAlert {
+				data.Products[i] = product
+				i++
+				break
+			}
+		}
+	}
+
+	data.Products = data.Products[:i]
+
+	return &data.Products, nil
+}
+
 type UpdateOrderData struct {
 	Status         string `json:"status"`
 	ShipmentStatus string `json:"shipmentStatus"`

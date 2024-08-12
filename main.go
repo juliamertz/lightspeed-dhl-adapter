@@ -22,16 +22,28 @@ func main() {
 		log.Fatal().Err(err).Msg("Failed to load secrets")
 	}
 
-	// var token dhl.ApiTokenResponse
-	// err = dhl.Authenticate(&token, conf.Dhl)
-	// if err != nil {
-	// 	log.Fatal().Err(err).Msg("Failed to authenticate")
-	// }
-	// fmt.Println(token)
-
 	database.Initialize()
 
 	dhl.StartPolling(conf)
+
+	http.HandleFunc("/stock-under-threshold", func(w http.ResponseWriter, r *http.Request) {
+		log.Debug().Str("Method", r.Method).Msg("Received request for stock under threshold")
+		if r.Method == "GET" {
+			data, err := lightspeed.GetStockUnderThreshold()
+			if err != nil {
+				log.Err(err).Stack().Msg("Failed to get stock under threshold")
+				return
+			}
+
+			encoded, err := json.Marshal(data)
+			if err != nil {
+				log.Err(err).Stack().Msg("Failed to encode stock data")
+				return
+			}
+
+			fmt.Fprintln(w, string(encoded))
+		}
+	})
 
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug().Str("Method", r.Method).Msg("Received webhook")
