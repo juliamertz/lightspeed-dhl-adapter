@@ -4,6 +4,7 @@ ApiKey    = "uuid"
 AccountId = "0700000"
 
 [Lightspeed]
+Frontend = "https://<subdomain>.webshopapp.com"
 Cluster = "https://api.webshopapp.com/en/"
 Key     = ""
 Secret  = ""

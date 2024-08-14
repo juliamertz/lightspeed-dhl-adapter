@@ -41,6 +41,9 @@ func main() {
 				return
 			}
 
+      w.Header().Set("Access-Control-Allow-Origin", conf.Lightspeed.Frontend)
+      w.Header().Set("Content-Type", "application/json")
+
 			fmt.Fprintln(w, string(encoded))
 		}
 	})
