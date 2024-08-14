@@ -42,6 +42,7 @@ type CountryCode struct {
 }
 
 type Variant struct {
+	Id         int `json:"id"`
 	StockLevel int `json:"stockLevel"`
 	StockAlert int `json:"stockAlert"`
 }
