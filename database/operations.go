@@ -21,6 +21,17 @@ func CreateDraft(dhlDraftId string, lightspeedOrderId string, lightspeedOrderNum
 	return err
 }
 
+func DeleteDraft(dhlDraftId string) error {
+	db, err := sql.Open("sqlite3", dbPath)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	_, err = db.Exec(`DELETE FROM orders WHERE dhlDraftId=?`, dhlDraftId)
+	return err
+}
+
 func SetShipmentId(dhlDraftId string, dhlShipmentId string) error {
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {

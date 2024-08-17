@@ -39,11 +39,11 @@ func StartPolling(conf *config.Secrets) {
 				}
 
 				logger.Debug().Interface("Label", label).Msg("Label found")
-				// err = database.SetShipmentId(*order.DhlDraftId, label.shipmentId)
-				// if err != nil {
-				// 	logger.Err(err).Msg("Error setting shipment id")
-				// 	continue
-				// }
+				err = database.SetShipmentId(*order.DhlDraftId, label.shipmentId)
+				if err != nil {
+					logger.Err(err).Msg("Error setting shipment id")
+					continue
+				}
 
 				data, err := lightspeed.GetOrder(*order.LightspeedOrderId)
 				if err != nil {
@@ -55,7 +55,11 @@ func StartPolling(conf *config.Secrets) {
 				logger.Debug().Bool("status", isCancelled).Msg("Order cancelled status")
 
 				if isCancelled {
-					logger.Info().Msg("Order is cancelled, not updating status")
+					logger.Info().Str("DHL draft id", *order.DhlDraftId).Str("Order reference", label.orderReference).Msg("Order is cancelled, removing from database")
+          err := database.DeleteDraft(*order.DhlDraftId)
+          if err != nil {
+						logger.Err(err).Str("DHL draft id", *order.DhlDraftId).Msg("Error deleting cancelled order from database")
+          }
 					continue
 				}
 
