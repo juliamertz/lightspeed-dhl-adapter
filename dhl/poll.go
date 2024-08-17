@@ -24,9 +24,13 @@ func StartPolling(conf *config.Secrets) {
 			for i := range orders {
 				order := orders[i]
 
-				logger := log.With().Stack().Int("Order number", *order.LightspeedOrderId).Logger()
-				logger.Debug().Interface("order", order).Msg("Processing order")
+				// Create base of logging context
+				baseLogger := log.With().Stack().Int("Order number", *order.LightspeedOrderId).Str("DHL draft id", *order.DhlDraftId)
+				logger := baseLogger.Logger()
 
+        logger.Debug().Interface("order", order).Msg("Processing order")
+
+				// Check with DHL api if a label has been created for this order
 				label, err := GetLabelByReference(*order.LightspeedOrderId)
 				if err != nil {
 					logger.Err(err).Msg("Error getting label by reference")
@@ -38,7 +42,11 @@ func StartPolling(conf *config.Secrets) {
 					continue
 				}
 
+				// Add extra information to logging context
+				logger = baseLogger.Str("Order reference", label.orderReference).Logger()
+
 				logger.Debug().Interface("Label", label).Msg("Label found")
+				// Set shipment id for this order in the database
 				err = database.SetShipmentId(*order.DhlDraftId, label.shipmentId)
 				if err != nil {
 					logger.Err(err).Msg("Error setting shipment id")
@@ -47,7 +55,7 @@ func StartPolling(conf *config.Secrets) {
 
 				data, err := lightspeed.GetOrder(*order.LightspeedOrderId)
 				if err != nil {
-					logger.Err(err).Msg("Error getting order")
+					logger.Err(err).Msg("Error getting order from lightspeed, it might have been deleted")
 					continue
 				}
 
@@ -55,11 +63,12 @@ func StartPolling(conf *config.Secrets) {
 				logger.Debug().Bool("status", isCancelled).Msg("Order cancelled status")
 
 				if isCancelled {
-					logger.Info().Str("DHL draft id", *order.DhlDraftId).Str("Order reference", label.orderReference).Msg("Order is cancelled, removing from database")
-          err := database.DeleteDraft(*order.DhlDraftId)
-          if err != nil {
-						logger.Err(err).Str("DHL draft id", *order.DhlDraftId).Msg("Error deleting cancelled order from database")
-          }
+					logger.Info().Msg("Order is cancelled, removing from database")
+					// Delete cancelled orders to prevent unnecessary iterations
+					err := database.DeleteDraft(*order.DhlDraftId)
+					if err != nil {
+						logger.Err(err).Msg("Error deleting cancelled order from database")
+					}
 					continue
 				}
 
