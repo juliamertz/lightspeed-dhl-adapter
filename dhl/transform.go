@@ -8,12 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func WebhookToDraft(incoming lightspeed.IncomingOrder) (*Draft, error) {
-	conf, err := config.LoadSecrets("config.toml")
-	if err != nil {
-		return nil, err
-	}
-
+func WebhookToDraft(incoming lightspeed.IncomingOrder, conf *config.Secrets) (*Draft, error) {
 	orderId := fmt.Sprint(incoming.Order.Id)
 	return &Draft{
 		Id:             uuid.New().String(),

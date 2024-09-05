@@ -10,25 +10,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func Request(endpoint string, method string, body *[]byte) (*http.Response, error) {
-	conf, err := config.LoadSecrets("config.toml")
-	if err != nil {
-		return nil, err
-	}
-
+func Request(endpoint string, method string, body *[]byte, auth *ApiTokenResponse) (*http.Response, error) {
 	url := fmt.Sprintf("https://api-gw.dhlparcel.nl/%s", endpoint)
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var authResponse ApiTokenResponse
-	err = Authenticate(&authResponse, conf.Dhl)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Authorization", "Bearer "+authResponse.AccessToken)
+	req.Header.Set("Authorization", "Bearer "+auth.AccessToken)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	if body != nil {

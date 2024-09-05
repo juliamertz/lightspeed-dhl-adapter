@@ -29,7 +29,7 @@ func main() {
 	http.HandleFunc("/stock-under-threshold", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug().Str("Method", r.Method).Msg("Received request for stock under threshold")
 		if r.Method == "GET" {
-			data, err := lightspeed.GetStockUnderThreshold()
+			data, err := lightspeed.GetStockUnderThreshold(conf)
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to get stock under threshold")
 				return
@@ -41,8 +41,8 @@ func main() {
 				return
 			}
 
-      w.Header().Set("Access-Control-Allow-Origin", conf.Lightspeed.Frontend)
-      w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("Access-Control-Allow-Origin", conf.Lightspeed.Frontend)
+			w.Header().Set("Content-Type", "application/json")
 
 			fmt.Fprintln(w, string(encoded))
 		}
@@ -66,7 +66,7 @@ func main() {
 
 			log.Debug().Interface("Order data", orderData).Msg("Received order data from webhook")
 
-			draft, err := dhl.WebhookToDraft(orderData)
+			draft, err := dhl.WebhookToDraft(orderData, conf)
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to convert webhook to draft")
 				return
@@ -75,7 +75,7 @@ func main() {
 			log.Debug().Interface("Draft", draft).Msg("Transformed order data to draft")
 
 			if !*conf.Options.DryRun {
-				err = dhl.CreateDraft(draft)
+				err = dhl.CreateDraft(draft, conf)
 				if err != nil {
 					log.Err(err).Stack().Msg("Failed to create draft in DHL")
 					return

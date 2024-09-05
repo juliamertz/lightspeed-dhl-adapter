@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"lightspeed-dhl/config"
 )
 
-func GetOrder(id int) (*IncomingOrder, error) {
-	res, err := Request("orders/"+fmt.Sprint(id)+".json", "GET", nil)
+func GetOrder(id int, conf *config.Secrets) (*IncomingOrder, error) {
+	res, err := Request("orders/"+fmt.Sprint(id)+".json", "GET", nil, conf)
 	if err != nil {
 		return nil, err
 	}
@@ -25,8 +26,8 @@ func GetOrder(id int) (*IncomingOrder, error) {
 	return &order, nil
 }
 
-func GetStockUnderThreshold() (*[]Product, error) {
-	res, err := Request("catalog.json", "GET", nil)
+func GetStockUnderThreshold(conf *config.Secrets) (*[]Product, error) {
+	res, err := Request("catalog.json", "GET", nil, conf)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +71,7 @@ type RequestBody struct {
 	Order UpdateOrderData `json:"order"`
 }
 
-func UpdateOrderStatus(id int, data UpdateOrderData) error {
+func UpdateOrderStatus(id int, data UpdateOrderData, conf *config.Secrets) error {
 	body, err := json.Marshal(RequestBody{
 		Order: data,
 	})
@@ -78,7 +79,7 @@ func UpdateOrderStatus(id int, data UpdateOrderData) error {
 		return err
 	}
 
-	res, err := Request("orders/"+fmt.Sprint(id)+".json", "PUT", &body)
+	res, err := Request("orders/"+fmt.Sprint(id)+".json", "PUT", &body, conf)
 	if err != nil {
 		return err
 	}

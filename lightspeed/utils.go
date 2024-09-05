@@ -13,12 +13,7 @@ func BasicAuthHeader(username string, password string) string {
 	return "Basic " + base64.StdEncoding.EncodeToString([]byte(username+":"+password))
 }
 
-func Request(endpoint string, method string, body *[]byte) (*http.Response, error) {
-	conf, err := config.LoadSecrets("config.toml")
-	if err != nil {
-		return nil, err
-	}
-
+func Request(endpoint string, method string, body *[]byte, conf *config.Secrets) (*http.Response, error) {
 	url := fmt.Sprintf("%s/%s", conf.Lightspeed.Cluster, endpoint)
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {

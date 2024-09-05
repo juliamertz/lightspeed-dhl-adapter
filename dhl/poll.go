@@ -31,7 +31,7 @@ func StartPolling(conf *config.Secrets) {
 				logger.Debug().Interface("order", order).Msg("Processing order")
 
 				// Check with DHL api if a label has been created for this order
-				label, err := GetLabelByReference(*order.LightspeedOrderId)
+				label, err := GetLabelByReference(*order.LightspeedOrderId, conf)
 				if err != nil {
 					logger.Err(err).Msg("Error getting label by reference")
 					continue
@@ -53,7 +53,7 @@ func StartPolling(conf *config.Secrets) {
 					continue
 				}
 
-				data, err := lightspeed.GetOrder(*order.LightspeedOrderId)
+				data, err := lightspeed.GetOrder(*order.LightspeedOrderId, conf)
 				if err != nil {
 					logger.Err(err).Msg("Error getting order from lightspeed, it might have been deleted")
 					continue
@@ -76,7 +76,7 @@ func StartPolling(conf *config.Secrets) {
 					err := lightspeed.UpdateOrderStatus(*order.LightspeedOrderId, lightspeed.UpdateOrderData{
 						Status:         "completed_shipped",
 						ShipmentStatus: "shipped",
-					})
+					}, conf)
 					if err != nil {
 						logger.Err(err).Msg("Error updating order status")
 						continue

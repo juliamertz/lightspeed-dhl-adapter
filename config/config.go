@@ -87,15 +87,15 @@ func LoadSecrets(path string) (*Secrets, error) {
 	}
 
 	if secrets.Dhl.UserId == "" || secrets.Dhl.ApiKey == "" || secrets.Dhl.AccountId == "" {
-		return nil, errors.New("DHL secrets are missing")
+		return nil, errors.New("DHL secrets are incomplete")
 	}
 
 	if secrets.Lightspeed.Key == "" || secrets.Lightspeed.Secret == "" || secrets.Lightspeed.Cluster == "" || secrets.Lightspeed.Frontend == "" {
-		return nil, errors.New("Lightspeed secrets are missing")
+		return nil, errors.New("Lightspeed secrets are incomplete")
 	}
 
 	if secrets.CompanyInfo.Name == "" || secrets.CompanyInfo.Street == "" || secrets.CompanyInfo.City == "" || secrets.CompanyInfo.PostalCode == "" || secrets.CompanyInfo.CountryCode == "" || secrets.CompanyInfo.Number == "" || secrets.CompanyInfo.Addition == "" || secrets.CompanyInfo.Email == "" || secrets.CompanyInfo.PhoneNumber == "" {
-		return nil, errors.New("Company info is missing")
+		return nil, errors.New("Company info is incomplete")
 	}
 	return &secrets, nil
 }

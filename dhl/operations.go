@@ -4,24 +4,45 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"lightspeed-dhl/config"
 
 	"github.com/rs/zerolog/log"
 )
 
-func CreateDraft(draft *Draft) error {
+func authenticate(conf *config.Secrets) (*ApiTokenResponse, error) {
+	var authResponse ApiTokenResponse
+	err := Authenticate(&authResponse, conf.Dhl)
+	if err != nil {
+		return nil, err
+	}
+
+	return &authResponse, nil
+}
+
+func CreateDraft(draft *Draft, conf *config.Secrets) error {
 	body, err := json.Marshal(*draft)
 	if err != nil {
 		return err
 	}
-	_, err = Request("/drafts", "POST", &body)
+
+	auth, err := authenticate(conf)
+	if err != nil {
+		return err
+	}
+	_, err = Request("/drafts", "POST", &body, auth)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func GetDrafts() ([]Draft, error) {
-	res, err := Request("/drafts", "GET", nil)
+func GetDrafts(conf *config.Secrets) ([]Draft, error) {
+	auth, err := authenticate(conf)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := Request("/drafts", "GET", nil, auth)
 	if err != nil {
 		return nil, err
 	}
@@ -56,9 +77,13 @@ type Label struct {
 	accountNumber  string
 }
 
-func GetLabelByReference(reference int) (*Label, error) {
+func GetLabelByReference(reference int, conf *config.Secrets) (*Label, error) {
 	url := fmt.Sprintf("labels?orderReferenceFilter=%v", reference)
-	res, err := Request(url, "GET", nil)
+	auth, err := authenticate(conf)
+	if err != nil {
+		return nil, err
+	}
+	res, err := Request(url, "GET", nil, auth)
 	if err != nil {
 		log.Err(err).Stack().Msg("Error getting label by reference")
 		return nil, err
