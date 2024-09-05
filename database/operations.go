@@ -6,7 +6,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func CreateDraft(dhlDraftId string, lightspeedOrderId string, lightspeedOrderNumber string) error {
+func CreateDraft(dhlDraftId string, lightspeedOrderId int, lightspeedOrderNumber string) error {
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return err

@@ -9,12 +9,7 @@ import (
 	"github.com/rs/zerolog/pkgerrors"
 )
 
-func SetupLogger() {
-	conf, err := config.LoadSecrets("config.toml")
-	if err != nil {
-		panic(err)
-	}
-
+func SetupLogger(conf *config.Secrets) {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 

@@ -2,6 +2,8 @@ package database
 
 import (
 	"database/sql"
+	"time"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -17,8 +19,8 @@ type Order struct {
 	IsProcessed           int
 
 	Id        int
-	CreatedAt string
-	UpdatedAt *string
+	CreatedAt *time.Time 
+	UpdatedAt *time.Time
 }
 
 func Initialize() {
@@ -34,11 +36,11 @@ func Initialize() {
       dhlShipmentId TEXT,
       lightspeedOrderId INTEGER,
       lightspeedOrderNumber TEXT,
-      isProcessed INT DEFAULT 0,
+      isProcessed INTEGER DEFAULT 0,
 
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      createdAt TEXT NOT NULL,
-      updatedAt TEXT
+      createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_lightspeedOrderId ON orders (lightspeedOrderId);

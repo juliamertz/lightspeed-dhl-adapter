@@ -10,19 +10,33 @@ import (
 	"lightspeed-dhl/lightspeed"
 	"lightspeed-dhl/logger"
 	"net/http"
+	"strconv"
 
 	"github.com/rs/zerolog/log"
 )
 
 func main() {
-	logger.SetupLogger()
-
 	conf, err := config.LoadSecrets("config.toml")
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to load secrets")
 	}
 
+	logger.SetupLogger(conf)
+
 	database.Initialize()
+
+	t,e:=database.GetUnprocessed()
+	if e != nil {
+	  panic(e)
+	}
+	fmt.Printf("%+v\n", t)
+	panic(t)
+
+	// e := database.CreateDraft("test1", 2, "test3")
+	// if e != nil {
+	// 	panic(e)
+	// }
+	// panic("done")
 
 	dhl.StartPolling(conf)
 
@@ -84,7 +98,11 @@ func main() {
 				log.Info().Str("Order reference", orderData.Order.Number).Msg("Draft created in DHL")
 			}
 
-			err = database.CreateDraft(draft.Id, draft.OrderReference, orderData.Order.Number)
+			orderReference, err := strconv.Atoi(draft.OrderReference)
+			if err != nil {
+				log.Err(err).Stack().Str("reference", draft.OrderReference).Msg("Failed to parse order reference from string to int")
+			}
+			err = database.CreateDraft(draft.Id, orderReference, orderData.Order.Number)
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to create draft in database")
 				return
