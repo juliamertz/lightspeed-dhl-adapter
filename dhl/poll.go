@@ -28,7 +28,7 @@ func StartPolling(conf *config.Secrets) {
 				baseLogger := log.With().Stack().Int("Order number", *order.LightspeedOrderId).Str("DHL draft id", *order.DhlDraftId)
 				logger := baseLogger.Logger()
 
-        logger.Debug().Interface("order", order).Msg("Processing order")
+				logger.Debug().Interface("order", order).Msg("Processing order")
 
 				// Check with DHL api if a label has been created for this order
 				label, err := GetLabelByReference(*order.LightspeedOrderId)

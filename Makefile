@@ -1,4 +1,7 @@
-build:
+clean:
 	go mod tidy
 	gofmt -w */*.go
-	CGO_ENABLED=0 go build .
+
+build:
+	$(MAKE) clean
+	go build .

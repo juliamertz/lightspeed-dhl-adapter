@@ -3,3 +3,6 @@ database.db
 req.sh
 log.txt
 lightspeed-dhl
+.direnv
+.direnv/bin
+result
