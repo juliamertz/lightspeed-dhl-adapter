@@ -9,8 +9,7 @@ import (
 )
 
 func CreateDraft(draft *Draft) error {
-	// Change this to Marshal later, when debugging is done
-	body, err := json.MarshalIndent(*draft, "", "  ")
+	body, err := json.Marshal(*draft)
 	if err != nil {
 		return err
 	}

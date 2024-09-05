@@ -1,7 +1,5 @@
 package dhl
 
-// thank you chatgpt
-
 type Draft struct {
 	Id                 string             `json:"id"`
 	ShipmentId         string             `json:"shipmentId"`
