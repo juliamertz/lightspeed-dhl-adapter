@@ -1,5 +1,7 @@
 package dhl
 
+// TODO: Testing with dummy dhl key
+
 import (
 	"encoding/json"
 	"fmt"

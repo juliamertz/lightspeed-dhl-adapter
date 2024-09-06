@@ -7,10 +7,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const (
-	dbPath = "./database.db"
-)
-
 type Order struct {
 	DhlDraftId            *string
 	DhlShipmentId         *string
@@ -19,12 +15,16 @@ type Order struct {
 	IsProcessed           int
 
 	Id        int
-	CreatedAt *time.Time 
+	CreatedAt *time.Time
 	UpdatedAt *time.Time
 }
 
-func Initialize() {
-	db, err := sql.Open("sqlite3", dbPath)
+type DB struct {
+	conn *sql.DB
+}
+
+func Initialize(path string) DB {
+	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		panic(err)
 	}
@@ -50,5 +50,9 @@ func Initialize() {
 
 	if err != nil {
 		panic(err)
+	}
+
+	return DB{
+		conn: db,
 	}
 }

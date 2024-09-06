@@ -9,11 +9,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func StartPolling(conf *config.Secrets) {
+func StartPolling(conf *config.Secrets, db *database.DB) {
 	sleepDuration := time.Duration(*conf.Options.PollingInterval) * time.Minute
 	go func() {
 		for {
-			orders, err := database.GetUnprocessed()
+			orders, err := db.GetUnprocessed()
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to get all orders")
 				time.Sleep(sleepDuration)
@@ -47,7 +47,7 @@ func StartPolling(conf *config.Secrets) {
 
 				logger.Debug().Interface("Label", label).Msg("Label found")
 				// Set shipment id for this order in the database
-				err = database.SetShipmentId(*order.DhlDraftId, label.shipmentId)
+				err = db.SetShipmentId(*order.DhlDraftId, label.shipmentId)
 				if err != nil {
 					logger.Err(err).Msg("Error setting shipment id")
 					continue
@@ -65,7 +65,7 @@ func StartPolling(conf *config.Secrets) {
 				if isCancelled {
 					logger.Info().Msg("Order is cancelled, removing from database")
 					// Delete cancelled orders to prevent unnecessary iterations
-					err := database.DeleteDraft(*order.DhlDraftId)
+					err := db.DeleteDraft(*order.DhlDraftId)
 					if err != nil {
 						logger.Err(err).Msg("Error deleting cancelled order from database")
 					}
@@ -85,7 +85,7 @@ func StartPolling(conf *config.Secrets) {
 					logger.Debug().Msg("Order status updated to shipped")
 				}
 				// Set isProcessed in database
-				err = database.SetProcessed(*order.DhlDraftId)
+				err = db.SetProcessed(*order.DhlDraftId)
 				if err != nil {
 					logger.Err(err).Msg("Error setting processed")
 					continue

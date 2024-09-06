@@ -23,22 +23,8 @@ func main() {
 
 	logger.SetupLogger(conf)
 
-	database.Initialize()
-
-	t,e:=database.GetUnprocessed()
-	if e != nil {
-	  panic(e)
-	}
-	fmt.Printf("%+v\n", t)
-	panic(t)
-
-	// e := database.CreateDraft("test1", 2, "test3")
-	// if e != nil {
-	// 	panic(e)
-	// }
-	// panic("done")
-
-	dhl.StartPolling(conf)
+  db := database.Initialize("./database.db")
+	dhl.StartPolling(conf, &db)
 
 	http.HandleFunc("/stock-under-threshold", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug().Str("Method", r.Method).Msg("Received request for stock under threshold")
@@ -102,7 +88,7 @@ func main() {
 			if err != nil {
 				log.Err(err).Stack().Str("reference", draft.OrderReference).Msg("Failed to parse order reference from string to int")
 			}
-			err = database.CreateDraft(draft.Id, orderReference, orderData.Order.Number)
+			err = db.CreateDraft(draft.Id, orderReference, orderData.Order.Number)
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to create draft in database")
 				return

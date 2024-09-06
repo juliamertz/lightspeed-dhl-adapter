@@ -1,19 +1,15 @@
 package database
 
 import (
-	"database/sql"
-
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func CreateDraft(dhlDraftId string, lightspeedOrderId int, lightspeedOrderNumber string) error {
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
+const (
+	dbPath = "./database.db"
+)
 
-	_, err = db.Exec(`
+func (db *DB) CreateDraft(dhlDraftId string, lightspeedOrderId int, lightspeedOrderNumber string) error {
+	_, err := db.conn.Exec(`
     INSERT INTO orders (createdAt, dhlDraftId, lightspeedOrderId, lightspeedOrderNumber)
     VALUES (datetime('now'), ?, ?, ?);`,
 		dhlDraftId, lightspeedOrderId, lightspeedOrderNumber,
@@ -21,45 +17,23 @@ func CreateDraft(dhlDraftId string, lightspeedOrderId int, lightspeedOrderNumber
 	return err
 }
 
-func DeleteDraft(dhlDraftId string) error {
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	_, err = db.Exec(`DELETE FROM orders WHERE dhlDraftId=?`, dhlDraftId)
+func (db *DB)DeleteDraft( dhlDraftId string) error {
+	_, err := db.conn.Exec(`DELETE FROM orders WHERE dhlDraftId=?`, dhlDraftId)
 	return err
 }
 
-func SetShipmentId(dhlDraftId string, dhlShipmentId string) error {
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return err
-	}
-
-	_, err = db.Exec(`UPDATE orders SET dhlShipmentId = ? WHERE dhlDraftId = ?;`, dhlShipmentId, dhlDraftId)
+func (db *DB)SetShipmentId( dhlDraftId string, dhlShipmentId string) error {
+	_, err := db.conn.Exec(`UPDATE orders SET dhlShipmentId = ? WHERE dhlDraftId = ?;`, dhlShipmentId, dhlDraftId)
 	return err
 }
 
-func SetProcessed(dhlDraftId string) error {
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return err
-	}
-
-	_, err = db.Exec(`UPDATE orders SET isProcessed = 1 WHERE dhlDraftId = ?;`, dhlDraftId)
+func (db *DB)SetProcessed( dhlDraftId string) error {
+	_, err := db.conn.Exec(`UPDATE orders SET isProcessed = 1 WHERE dhlDraftId = ?;`, dhlDraftId)
 	return err
 }
 
-func GetUnprocessed() ([]Order, error) {
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
-	rows, err := db.Query(`SELECT * FROM orders WHERE isProcessed = 0;`)
+func (db *DB) GetUnprocessed() ([]Order, error) {
+	rows, err := db.conn.Query(`SELECT * FROM orders WHERE isProcessed = 0;`)
 	if err != nil {
 		return nil, err
 	}
