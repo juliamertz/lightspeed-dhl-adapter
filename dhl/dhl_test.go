@@ -1,8 +1,6 @@
 package dhl_test
 
 import (
-	// "regexp"
-
 	"lightspeed-dhl/config"
 	"lightspeed-dhl/dhl"
 	"lightspeed-dhl/lightspeed"
@@ -13,6 +11,27 @@ func check(err error, t *testing.T) {
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
+}
+
+func TestAuthentication(t *testing.T) {
+	conf, err := config.LoadSecrets("../config.toml")
+	check(err, t)
+
+	if conf.Dhl.TestApiKey == nil {
+		t.Fatalf("config option Dhl.TestApiKey not set!")
+	}
+	if conf.Dhl.TestApiKey == &conf.Dhl.ApiKey {
+		t.Fatalf("Test api key has same value as regular api key!")
+	}
+
+	creds := dhl.AuthenticateRequest{
+		UserId: conf.Dhl.UserId,
+		ApiKey: *conf.Dhl.TestApiKey,
+	}
+
+	var response dhl.ApiTokenResponse
+	err = dhl.Authenticate(&response, creds)
+	check(err, t)
 }
 
 func TestTranslation(t *testing.T) {

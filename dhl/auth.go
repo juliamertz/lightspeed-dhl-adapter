@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"lightspeed-dhl/config"
 	"net/http"
 )
 
@@ -20,7 +19,12 @@ type ApiTokenResponse struct {
 	AccountNumbers         []string `json:"accountNumbers"`
 }
 
-func Authenticate(tokenResponse *ApiTokenResponse, credentials config.Dhl) error {
+type AuthenticateRequest struct {
+	UserId string `json:"userId"`
+	ApiKey string `json:"key"`
+}
+
+func Authenticate(tokenResponse *ApiTokenResponse, credentials AuthenticateRequest) error {
 	body, err := json.Marshal(credentials)
 	if err != nil {
 		return err

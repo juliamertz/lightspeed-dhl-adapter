@@ -9,7 +9,7 @@ const (
 )
 
 func (db *DB) CreateDraft(dhlDraftId string, lightspeedOrderId int, lightspeedOrderNumber string) error {
-	_, err := db.conn.Exec(`
+	_, err := db.Conn.Exec(`
     INSERT INTO orders (createdAt, dhlDraftId, lightspeedOrderId, lightspeedOrderNumber)
     VALUES (datetime('now'), ?, ?, ?);`,
 		dhlDraftId, lightspeedOrderId, lightspeedOrderNumber,
@@ -17,23 +17,23 @@ func (db *DB) CreateDraft(dhlDraftId string, lightspeedOrderId int, lightspeedOr
 	return err
 }
 
-func (db *DB)DeleteDraft( dhlDraftId string) error {
-	_, err := db.conn.Exec(`DELETE FROM orders WHERE dhlDraftId=?`, dhlDraftId)
+func (db *DB) DeleteDraft(dhlDraftId string) error {
+	_, err := db.Conn.Exec(`DELETE FROM orders WHERE dhlDraftId=?`, dhlDraftId)
 	return err
 }
 
-func (db *DB)SetShipmentId( dhlDraftId string, dhlShipmentId string) error {
-	_, err := db.conn.Exec(`UPDATE orders SET dhlShipmentId = ? WHERE dhlDraftId = ?;`, dhlShipmentId, dhlDraftId)
+func (db *DB) SetShipmentId(dhlDraftId string, dhlShipmentId string) error {
+	_, err := db.Conn.Exec(`UPDATE orders SET dhlShipmentId = ? WHERE dhlDraftId = ?;`, dhlShipmentId, dhlDraftId)
 	return err
 }
 
-func (db *DB)SetProcessed( dhlDraftId string) error {
-	_, err := db.conn.Exec(`UPDATE orders SET isProcessed = 1 WHERE dhlDraftId = ?;`, dhlDraftId)
+func (db *DB) SetProcessed(dhlDraftId string) error {
+	_, err := db.Conn.Exec(`UPDATE orders SET isProcessed = 1 WHERE dhlDraftId = ?;`, dhlDraftId)
 	return err
 }
 
 func (db *DB) GetUnprocessed() ([]Order, error) {
-	rows, err := db.conn.Query(`SELECT * FROM orders WHERE isProcessed = 0;`)
+	rows, err := db.Conn.Query(`SELECT * FROM orders WHERE isProcessed = 0;`)
 	if err != nil {
 		return nil, err
 	}

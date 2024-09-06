@@ -1,7 +1,8 @@
 [DHL]
 UserId    = "uuid"
-ApiKey    = "uuid"
 AccountId = "0700000"
+ApiKey    = "uuid"
+TestApiKey = "uuid"
 
 [Lightspeed]
 Frontend = "https://<subdomain>.webshopapp.com"

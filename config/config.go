@@ -8,9 +8,10 @@ import (
 )
 
 type Dhl struct {
-	UserId    string `json:"userId"`
-	ApiKey    string `json:"key"`
-	AccountId string `json:"-"`
+	UserId     string  `json:"userId"`
+	ApiKey     string  `json:"key"`
+	TestApiKey *string `json:"-"`
+	AccountId  string  `json:"-"`
 }
 
 type Lightspeed struct {

@@ -23,8 +23,13 @@ func main() {
 
 	logger.SetupLogger(conf)
 
-  db := database.Initialize("./database.db")
-	dhl.StartPolling(conf, &db)
+  db, err := database.Initialize("./database.db")
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize database")
+	}
+	defer db.Conn.Close()
+
+	dhl.StartPolling(conf, db)
 
 	http.HandleFunc("/stock-under-threshold", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug().Str("Method", r.Method).Msg("Received request for stock under threshold")

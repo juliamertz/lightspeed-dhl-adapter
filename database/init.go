@@ -20,15 +20,14 @@ type Order struct {
 }
 
 type DB struct {
-	conn *sql.DB
+	Conn *sql.DB
 }
 
-func Initialize(path string) DB {
+func Initialize(path string) (*DB, error) {
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	defer db.Close()
 
 	_, err = db.Exec(`
     CREATE TABLE IF NOT EXISTS orders (
@@ -49,10 +48,10 @@ func Initialize(path string) DB {
   `)
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return DB{
-		conn: db,
-	}
+	return &DB{
+		Conn: db,
+	}, nil
 }

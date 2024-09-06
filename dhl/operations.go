@@ -13,7 +13,10 @@ import (
 
 func authenticate(conf *config.Secrets) (*ApiTokenResponse, error) {
 	var authResponse ApiTokenResponse
-	err := Authenticate(&authResponse, conf.Dhl)
+	err := Authenticate(&authResponse, AuthenticateRequest{
+		UserId: conf.Dhl.UserId,
+		ApiKey: conf.Dhl.ApiKey,
+	})
 	if err != nil {
 		return nil, err
 	}
