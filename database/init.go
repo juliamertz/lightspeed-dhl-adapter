@@ -42,7 +42,6 @@ func Initialize() {
     );
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_lightspeedOrderId ON orders (lightspeedOrderId);
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_dhlShipmentId ON orders (dhlShipmentId); 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_dhlDraftId ON orders (dhlDraftId);
   `)
 
