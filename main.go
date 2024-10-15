@@ -11,17 +11,22 @@ import (
 	"lightspeed-dhl/logger"
 	"net/http"
 
+	"github.com/alecthomas/kong"
 	"github.com/rs/zerolog/log"
 )
 
-func main() {
-	logger.SetupLogger()
+var CLI struct {
+	Config string `arg:"" name:"path" help:"Path to configuration file" type:"path"`
+}
 
-	conf, err := config.LoadSecrets("config.toml")
+func main() {
+	cli := kong.Parse(&CLI)
+	conf, err := config.LoadSecrets(cli.Args[0])
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to load secrets")
+		panic("Failed to load secrets")
 	}
 
+	logger.SetupLogger(conf)
 	database.Initialize()
 
 	dhl.StartPolling(conf)
