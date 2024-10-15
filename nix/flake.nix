@@ -22,7 +22,8 @@
             inherit version;
             src = ../.;
 
-            vendorHash = "sha256-23QtnwIv4tivXGsZAYaTjB/M+30WO1tDFjTkN8OMBzw=";
+            vendorHash = "sha256-o2SNdqIx+YvpKh883rowk9/IlNnpSiutgvc29CAWKj4=";
+            meta.mainProgram = "lightspeed-dhl";
           };
         });
 

@@ -49,8 +49,11 @@ func TestTranslation(t *testing.T) {
 		Order: order,
 	}
 
-	conf, err := config.LoadSecrets("../config.toml")
-	check(err, t)
+	note := ""
+	conf := &config.Secrets{
+		CompanyInfo: config.CompanyInfo{PersonalNote: &note},
+	}
+
 	draft, err := dhl.WebhookToDraft(incoming, conf)
 	check(err, t)
 
