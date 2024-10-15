@@ -63,5 +63,4 @@ func TestTranslation(t *testing.T) {
 	if draft.OrderReference != "12345" {
 		t.Errorf("Order reference should match reference: %v, expected 12345", draft.OrderReference)
 	}
-	// TODO: Check DHL Reference option
 }
