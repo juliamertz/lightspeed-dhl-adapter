@@ -14,7 +14,7 @@ type Draft struct {
 	CustomsDeclaration CustomsDeclaration `json:"customsDeclaration"`
 	ReturnLabel        bool               `json:"returnLabel"`
 	Pieces             []Piece            `json:"pieces"`
-	DeliveryArea       DeliveryArea       `json:"deliveryArea"`
+	// DeliveryArea       DeliveryArea       `json:"deliveryArea"`
 	Metadata           Metadata           `json:"metadata"`
 }
 

@@ -49,7 +49,7 @@ func main() {
 	})
 
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
-		log.Debug().Str("Method", r.Method).Msg("Received webhook")
+		log.Info().Str("Method", r.Method).Msg("Received webhook")
 		if r.Method == "POST" {
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
@@ -75,7 +75,7 @@ func main() {
 			log.Debug().Interface("Draft", draft).Msg("Transformed order data to draft")
 
 			if !*conf.Options.DryRun {
-				err = dhl.CreateDraft(draft, conf)
+				err, _ = dhl.CreateDraft(draft, conf)
 				if err != nil {
 					log.Err(err).Stack().Msg("Failed to create draft in DHL")
 					return

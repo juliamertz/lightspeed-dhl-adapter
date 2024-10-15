@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"lightspeed-dhl/config"
+	"net/http"
 
 	"github.com/rs/zerolog/log"
 )
@@ -19,21 +20,26 @@ func authenticate(conf *config.Secrets) (*ApiTokenResponse, error) {
 	return &authResponse, nil
 }
 
-func CreateDraft(draft *Draft, conf *config.Secrets) error {
+func CreateDraft(draft *Draft, conf *config.Secrets) (error, *http.Response) {
 	body, err := json.Marshal(*draft)
 	if err != nil {
-		return err
+		return err, nil
 	}
 
 	auth, err := authenticate(conf)
 	if err != nil {
-		return err
+		return err, nil
 	}
-	_, err = Request("/drafts", "POST", &body, auth)
+	res, err := Request("drafts", "POST", &body, auth)
 	if err != nil {
-		return err
+		return err, nil
 	}
-	return nil
+
+  if res.StatusCode != 201 {
+    return fmt.Errorf("Expected statuscode response 201, got %v", res.StatusCode), nil
+  }
+
+	return nil, res
 }
 
 func GetDrafts(conf *config.Secrets) ([]Draft, error) {
@@ -42,7 +48,7 @@ func GetDrafts(conf *config.Secrets) ([]Draft, error) {
 		return nil, err
 	}
 
-	res, err := Request("/drafts", "GET", nil, auth)
+	res, err := Request("drafts", "GET", nil, auth)
 	if err != nil {
 		return nil, err
 	}
