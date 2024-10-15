@@ -23,7 +23,6 @@
             src = ../.;
 
             vendorHash = "sha256-23QtnwIv4tivXGsZAYaTjB/M+30WO1tDFjTkN8OMBzw=";
-            # vendorHash = pkgs.lib.fakeHash;
           };
         });
 
