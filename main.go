@@ -8,21 +8,23 @@ import (
 	"lightspeed-dhl/logger"
 	"net/http"
 
+	"github.com/alecthomas/kong"
 	"github.com/rs/zerolog/log"
 )
 
+var CLI struct {
+	Config string `arg:"" name:"path" help:"Path to configuration file" type:"path"`
+}
+
 func main() {
-	conf, err := config.LoadSecrets("config.toml")
+	cli := kong.Parse(&CLI)
+	conf, err := config.LoadSecrets(cli.Args[0])
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to load secrets")
+		panic("Failed to load secrets")
 	}
+
 	logger.SetupLogger(conf)
-
-  db, err := database.Initialize("./database.db")
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to initialize database")
-	}
-
+	database.Initialize()
 
 	// TODO: set up route handlers
 
