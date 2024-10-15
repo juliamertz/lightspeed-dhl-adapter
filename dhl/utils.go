@@ -33,6 +33,12 @@ func Request(endpoint string, method string, body *[]byte, auth *ApiTokenRespons
 	if res.StatusCode == 429 {
 		log.Warn().Msg("Rate limit reached")
 	}
+	if res.StatusCode == 404 {
+		log.Error().Str("Endpoint", endpoint).Interface("Response", res).Msg("404 While trying to interact with dhl api")
+	}
+	if res.StatusCode != 200 {
+		log.Debug().Int("statuscode", res.StatusCode).Msg("Non 200 Statuscode response for dhl api request")
+	}
 
 	return res, nil
 }
