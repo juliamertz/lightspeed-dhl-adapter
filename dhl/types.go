@@ -15,7 +15,7 @@ type Draft struct {
 	ReturnLabel        bool               `json:"returnLabel"`
 	Pieces             []Piece            `json:"pieces"`
 	// DeliveryArea       DeliveryArea       `json:"deliveryArea"`
-	Metadata           Metadata           `json:"metadata"`
+	Metadata Metadata `json:"metadata"`
 }
 
 type Contact struct {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"lightspeed-dhl/config"
 	"lightspeed-dhl/database"
+	"lightspeed-dhl/server"
 	"lightspeed-dhl/dhl"
 	"lightspeed-dhl/logger"
 	"net/http"
@@ -18,74 +19,30 @@ var CLI struct {
 
 func main() {
 	cli := kong.Parse(&CLI)
+
 	conf, err := config.LoadSecrets(cli.Args[0])
 	if err != nil {
 		panic("Failed to load secrets")
 	}
 
-	logger.SetupLogger(conf)
-	database.Initialize()
-
-	// TODO: set up route handlers
-
-	client := dhl.NewClient(nil)
+  db, err := database.Initialize("./database.db")
+	if err != nil {
+		panic("Failed to initialize database")
+	}
+  
+	client := dhl.New()
   client.Authenticate(conf.Dhl)
 
-			encoded, err := json.Marshal(data)
-			if err != nil {
-				log.Err(err).Stack().Msg("Failed to encode stock data")
-				return
-			}
+	logger.SetupLogger(conf)
+	// TODO: set up route handlers
 
-			w.Header().Set("Access-Control-Allow-Origin", conf.Lightspeed.Frontend)
-			w.Header().Set("Content-Type", "application/json")
+  server.RegisterMancoHandler(conf)
+  server.RegisterLightspeedWebhookHandler(conf, &client, db)
 
-			fmt.Fprintln(w, string(encoded))
-		}
-	})
+  // fmt.Printf("%v", client.GetSession())
+  // os.Exit(1)
 
-	http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
-		log.Info().Str("Method", r.Method).Msg("Received webhook")
-		if r.Method == "POST" {
-			body, err := io.ReadAll(r.Body)
-			if err != nil {
-				log.Err(err).Stack().Msg("Failed to read request body")
-				return
-			}
-
-			var orderData lightspeed.IncomingOrder
-			err = json.Unmarshal(body, &orderData)
-			if err != nil {
-				log.Err(err).Stack().Msg("Failed to unmarshal request body")
-				return
-			}
-
-			log.Debug().Interface("Order data", orderData).Msg("Received order data from webhook")
-
-			draft := dhl.WebhookToDraft(orderData, conf)
-			log.Debug().Interface("Draft", draft).Msg("Transformed order data to draft")
-
-			if !*conf.Options.DryRun {
-				err, _ = dhl.CreateDraft(&draft, conf)
-				if err != nil {
-					log.Err(err).Stack().Msg("Failed to create draft in DHL")
-					return
-				}
-
-				log.Info().Str("Order reference", orderData.Order.Number).Msg("Draft created in DHL")
-			}
-
-			err = database.CreateDraft(draft.Id, draft.OrderReference, orderData.Order.Number)
-			if err != nil {
-				log.Err(err).Stack().Msg("Failed to create draft in database")
-				return
-			}
-
-			log.Info().Str("Order reference", orderData.Order.Number).Msg("Draft created in database")
-
-			w.WriteHeader(http.StatusOK)
-		}
-	})
+  dhl.StartPolling(&client, conf, db)
 
 	log.Info().Int("Port", *conf.Options.Port).Msg("Starting server")
 	_ = http.ListenAndServe(fmt.Sprintf(":%d", *conf.Options.Port), nil)

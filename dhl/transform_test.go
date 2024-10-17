@@ -33,7 +33,7 @@ func TestTranslation(t *testing.T) {
 
 		AddressBillingStreet:    "123 Main St",
 		AddressBillingCity:      "Amsterdam",
-		AddressBillingZipcode:    "5050 AJ",
+		AddressBillingZipcode:   "5050 AJ",
 		AddressBillingCountry:   lightspeed.CountryCode{Code: "US"},
 		AddressBillingNumber:    "12",
 		AddressBillingExtension: "B",

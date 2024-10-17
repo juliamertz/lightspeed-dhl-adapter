@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"encoding/json"
@@ -12,6 +12,8 @@ import (
 
 	"github.com/rs/zerolog/log"
 )
+
+// TODO: Respond with proper status codes
 
 func RegisterMancoHandler(conf *config.Secrets) {
 	http.HandleFunc("/stock-under-threshold", func(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +39,7 @@ func RegisterMancoHandler(conf *config.Secrets) {
 	})
 }
 
-func RegisterLightspeedWebhookHandler(conf *config.Secrets, client *dhl.Client) {
+func RegisterLightspeedWebhookHandler(conf *config.Secrets, client *dhl.Client, db *database.DB) {
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
 		log.Info().Str("Method", r.Method).Msg("Received webhook")
 		if r.Method == "POST" {
@@ -69,7 +71,7 @@ func RegisterLightspeedWebhookHandler(conf *config.Secrets, client *dhl.Client) 
 				log.Info().Str("Order reference", orderData.Order.Number).Msg("Draft created in DHL")
 			}
 
-			err = database.CreateDraft(draft.Id, draft.OrderReference, orderData.Order.Number)
+			err = db.CreateDraft(draft.Id, draft.OrderReference, orderData.Order.Number)
 			if err != nil {
 				log.Err(err).Msg("Failed to create draft in database")
 				return

@@ -19,14 +19,9 @@ type Client struct {
 	Cluster string
 }
 
-func NewClient(cluster *string) Client {
-	if cluster == nil {
-		defaultCluster := "https://api-gw.dhlparcel.nl"
-		cluster = &defaultCluster
-	}
-
+func New() Client {
 	return Client{
-		Cluster: *cluster,
+		Cluster: "https://api-gw.dhlparcel.nl",
 		session: nil,
 	}
 }
@@ -39,33 +34,31 @@ type AuthSession struct {
 	AccountNumbers         []string `json:"accountNumbers"`
 }
 
+// TODO: make sure session exists
 func (s *AuthSession) RefreshTokenExpired() bool {
 	now := time.Now().Local().Unix()
-	return int64(s.RefreshTokenExpiration) >= now
+	return int64(s.RefreshTokenExpiration) < now
 }
 
+// TODO: make sure session exists
 func (s *AuthSession) AccessTokenExpired() bool {
 	now := time.Now().Local().Unix()
-	return int64(s.AccessTokenExpiration) >= now
+	return int64(s.AccessTokenExpiration) < now
 }
 
 func (c *Client) request(endpoint string, method string, body *[]byte) (*http.Response, error) {
+	session := c.GetSession()
 	endpoint = strings.TrimPrefix(endpoint, "/")
-  session := c.GetSession()
-	if session == nil {
-    // TODO: 
-    panic("nil session in dhl request")
-	}
-
-	// https://api-gw.dhlparcel.nl
 	url := fmt.Sprintf("%s/%s", c.Cluster, endpoint)
+
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-  // TODO: Make sure session exists
-	req.Header.Set("Authorization", "Bearer "+c.session.AccessToken)
+	if session != nil {
+		req.Header.Set("Authorization", "Bearer "+c.session.AccessToken)
+	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	if body != nil {
@@ -94,16 +87,19 @@ func (c *Client) request(endpoint string, method string, body *[]byte) (*http.Re
 	return res, nil
 }
 
-
 // TODO: Test this function
 // TODO: Make sure session gets properly revalidated once the refreshtoken has expired
 // Returns a session as long as there is a valid way to obtain it without having to re-authenticate
 func (c *Client) GetSession() *AuthSession {
 	if c.session != nil {
+		expired := c.session.AccessTokenExpired()
+		fmt.Printf("access token expired: %v\n", expired)
 		if !c.session.AccessTokenExpired() {
 			return c.session
 		}
 
+		expired = c.session.AccessTokenExpired()
+		fmt.Printf("refresh expired: %v\n", expired)
 		if !c.session.RefreshTokenExpired() {
 			err := c.RefreshSession()
 			if err != nil {
@@ -166,11 +162,14 @@ func (c *Client) Authenticate(credentials config.Dhl) error {
 		return err
 	}
 
-	err = json.NewDecoder(res.Body).Decode(&c.session)
+	var data AuthSession
+
+	err = json.NewDecoder(res.Body).Decode(&data)
 	if err != nil {
 		return err
 	}
 
+	c.session = &data
 	return nil
 }
 

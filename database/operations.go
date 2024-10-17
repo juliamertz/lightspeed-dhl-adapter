@@ -8,7 +8,7 @@ const (
 	dbPath = "./database.db"
 )
 
-func (db *DB) CreateDraft(dhlDraftId string, lightspeedOrderId int, lightspeedOrderNumber string) error {
+func (db *DB) CreateDraft(dhlDraftId string, lightspeedOrderId string, lightspeedOrderNumber string) error {
 	_, err := db.Conn.Exec(`
     INSERT INTO orders (createdAt, dhlDraftId, lightspeedOrderId, lightspeedOrderNumber)
     VALUES (datetime('now'), ?, ?, ?);`,

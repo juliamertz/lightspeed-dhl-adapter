@@ -12,7 +12,7 @@ import (
 )
 
 func Request(endpoint string, method string, body *[]byte, auth *ApiTokenResponse) (*http.Response, error) {
-  endpoint = strings.TrimPrefix(endpoint, "/")
+	endpoint = strings.TrimPrefix(endpoint, "/")
 
 	url := fmt.Sprintf("https://api-gw.dhlparcel.nl/%s", endpoint)
 	req, err := http.NewRequest(method, url, nil)
