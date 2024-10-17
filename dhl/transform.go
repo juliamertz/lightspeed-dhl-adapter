@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"lightspeed-dhl/config"
 	"lightspeed-dhl/lightspeed"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -27,7 +28,7 @@ func WebhookToDraft(incoming lightspeed.IncomingOrder, conf *config.Secrets) (*D
 				IsBusiness:  incoming.Order.IsCompany,
 				Street:      incoming.Order.AddressShippingStreet,
 				City:        incoming.Order.AddressShippingCity,
-				PostalCode:  incoming.Order.AddressShippingZipcode,
+				PostalCode:  strings.ReplaceAll(incoming.Order.AddressShippingZipcode, " ", ""),
 				CountryCode: incoming.Order.AddressShippingCountry.Code,
 				Number:      incoming.Order.AddressShippingNumber,
 				Addition:    incoming.Order.AddressShippingExtension,
