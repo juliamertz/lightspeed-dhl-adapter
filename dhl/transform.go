@@ -1,20 +1,19 @@
 package dhl
 
 import (
-	"fmt"
 	"lightspeed-dhl/config"
 	"lightspeed-dhl/lightspeed"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
 )
 
 func WebhookToDraft(incoming lightspeed.IncomingOrder, conf *config.Secrets) Draft {
-	orderId := fmt.Sprint(incoming.Order.Id)
 	return Draft{
 		Id:             uuid.New().String(),
 		ShipmentId:     uuid.New().String(),
-		OrderReference: orderId,
+		OrderReference: strconv.Itoa(incoming.Order.Id),
 		Receiver: Contact{
 			Email:       incoming.Order.Email,
 			PhoneNumber: incoming.Order.Phone,
