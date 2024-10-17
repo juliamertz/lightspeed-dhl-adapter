@@ -55,8 +55,7 @@ func TestTranslation(t *testing.T) {
 		CompanyInfo: config.CompanyInfo{PersonalNote: &note},
 	}
 
-	draft, err := dhl.WebhookToDraft(incoming, conf)
-	check(err, t)
+	draft := dhl.WebhookToDraft(incoming, conf)
 
 	if draft.Receiver.Address.Street != "456 Elm St" {
 		t.Errorf("Receiver street should be set to AdressShippingStreet")

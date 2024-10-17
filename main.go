@@ -71,16 +71,11 @@ func main() {
 
 			log.Debug().Interface("Order data", orderData).Msg("Received order data from webhook")
 
-			draft, err := dhl.WebhookToDraft(orderData, conf)
-			if err != nil {
-				log.Err(err).Stack().Msg("Failed to convert webhook to draft")
-				return
-			}
-
+			draft := dhl.WebhookToDraft(orderData, conf)
 			log.Debug().Interface("Draft", draft).Msg("Transformed order data to draft")
 
 			if !*conf.Options.DryRun {
-				err, _ = dhl.CreateDraft(draft, conf)
+				err, _ = dhl.CreateDraft(&draft, conf)
 				if err != nil {
 					log.Err(err).Stack().Msg("Failed to create draft in DHL")
 					return

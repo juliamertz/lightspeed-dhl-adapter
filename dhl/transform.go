@@ -9,9 +9,9 @@ import (
 	"github.com/google/uuid"
 )
 
-func WebhookToDraft(incoming lightspeed.IncomingOrder, conf *config.Secrets) (*Draft, error) {
+func WebhookToDraft(incoming lightspeed.IncomingOrder, conf *config.Secrets) Draft {
 	orderId := fmt.Sprint(incoming.Order.Id)
-	return &Draft{
+	return Draft{
 		Id:             uuid.New().String(),
 		ShipmentId:     uuid.New().String(),
 		OrderReference: orderId,
@@ -45,5 +45,5 @@ func WebhookToDraft(incoming lightspeed.IncomingOrder, conf *config.Secrets) (*D
 
 		Shipper:   ShipperFromConfig(conf.CompanyInfo),
 		AccountId: conf.Dhl.AccountId,
-	}, nil
+	}
 }
