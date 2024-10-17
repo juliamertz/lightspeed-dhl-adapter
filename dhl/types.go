@@ -14,8 +14,8 @@ type Draft struct {
 	CustomsDeclaration CustomsDeclaration `json:"customsDeclaration"`
 	ReturnLabel        bool               `json:"returnLabel"`
 	Pieces             []Piece            `json:"pieces"`
-	DeliveryArea       DeliveryArea       `json:"deliveryArea"`
-	Metadata           Metadata           `json:"metadata"`
+	// DeliveryArea       DeliveryArea       `json:"deliveryArea"`
+	Metadata Metadata `json:"metadata"`
 }
 
 type Contact struct {
@@ -58,6 +58,22 @@ type Address struct {
 type Option struct {
 	Key   string `json:"key"`
 	Input string `json:"input"`
+}
+
+type Label struct {
+	LabelId        string `json:"labelId"`
+	OrderReference string `json:"orderReference"`
+	ParcelType     string `json:"parcelType"`
+	LabelType      string `json:"labelType"`
+	PieceNumber    int    `json:"pieceNumber"`
+	TrackerCode    string `json:"trackerCode"`
+	RoutingCode    string `json:"routingCode"`
+	UserId         string `json:"userId"`
+	OrganisationId string `json:"organisationId"`
+	Application    string `json:"application"`
+	TimeCreated    string `json:"timeCreated"`
+	ShipmentId     string `json:"shipmentId"`
+	AccountNumber  string `json:"accountNumber"`
 }
 
 type CustomsDeclaration struct {
