@@ -6,6 +6,7 @@ import (
 	"lightspeed-dhl/config"
 	"lightspeed-dhl/dhl"
 	"lightspeed-dhl/lightspeed"
+	"strings"
 	"testing"
 )
 
@@ -39,7 +40,7 @@ func TestTranslation(t *testing.T) {
 
 		AddressShippingStreet:    "456 Elm St",
 		AddressShippingCity:      "Los Angeles",
-		AddressShippingZipcode:   "90001",
+		AddressShippingZipcode:   "5050 AJ",
 		AddressShippingCountry:   lightspeed.CountryCode{Code: "US"},
 		AddressShippingNumber:    "34",
 		AddressShippingExtension: "C",
@@ -65,5 +66,9 @@ func TestTranslation(t *testing.T) {
 	}
 	if draft.OrderReference != "12345" {
 		t.Errorf("Order reference should match reference: %v, expected 12345", draft.OrderReference)
+	}
+
+	if strings.Contains(draft.Receiver.Address.PostalCode, " ") {
+		t.Errorf("Postal code shouldn't contain any whitespace")
 	}
 }
