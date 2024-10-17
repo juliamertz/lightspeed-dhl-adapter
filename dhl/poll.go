@@ -9,7 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func StartPolling(client *Client, conf *config.Secrets) {
+func StartPolling(client *Client, conf *config.Secrets, db *database.DB) {
 	sleepDuration := time.Duration(*conf.Options.PollingInterval) * time.Minute
 
 	go func() {
@@ -48,7 +48,7 @@ func StartPolling(client *Client, conf *config.Secrets) {
 
 				logger.Debug().Interface("Label", label).Msg("Label found")
 				// Set shipment id for this order in the database
-				err = database.SetShipmentId(*order.DhlDraftId, label.ShipmentId)
+				err = db.SetShipmentId(*order.DhlDraftId, label.ShipmentId)
 				if err != nil {
 					logger.Err(err).Msg("Error setting shipment id")
 					continue

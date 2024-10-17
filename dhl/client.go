@@ -52,6 +52,10 @@ func (s *AuthSession) AccessTokenExpired() bool {
 func (c *Client) request(endpoint string, method string, body *[]byte) (*http.Response, error) {
 	endpoint = strings.TrimPrefix(endpoint, "/")
   session := c.GetSession()
+	if session == nil {
+    // TODO: 
+    panic("nil session in dhl request")
+	}
 
 	// https://api-gw.dhlparcel.nl
 	url := fmt.Sprintf("%s/%s", c.Cluster, endpoint)
