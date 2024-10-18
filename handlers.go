@@ -1,4 +1,4 @@
-package server
+package main 
 
 import (
 	"encoding/json"
@@ -67,6 +67,7 @@ func RegisterLightspeedWebhookHandler(conf *config.Secrets, client *dhl.Client, 
 			log.Debug().Interface("Draft", draft).Msg("Transformed order data to draft")
 
 			if !*conf.Options.DryRun {
+        // TODO: Test that draft is being created 
 				err, _ = client.CreateDraft(&draft)
 				if err != nil {
 					log.Err(err).Msg("Failed to create draft in DHL")

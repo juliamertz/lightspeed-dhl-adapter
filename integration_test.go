@@ -9,8 +9,6 @@ import (
 	"lightspeed-dhl/database"
 	"lightspeed-dhl/dhl"
 	"lightspeed-dhl/lightspeed"
-	"lightspeed-dhl/logger"
-	"lightspeed-dhl/server"
 	"lightspeed-dhl/utils"
 	"net/http"
 	"os"
@@ -48,7 +46,7 @@ func TestMain(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to load secrets")
 	}
-	logger.SetupLogger(conf)
+	SetupLogger(conf)
 
 	*conf.Options.DryRun = false
 	if *conf.Options.DryRun {
@@ -153,8 +151,8 @@ func startTestServer(s *TestServer, conf *config.Secrets, client *dhl.Client, db
 	defer s.wg.Done()
 
 	go func() {
-		server.RegisterMancoHandler(conf)
-		server.RegisterLightspeedWebhookHandler(conf, client, db)
+		RegisterMancoHandler(conf)
+		RegisterLightspeedWebhookHandler(conf, client, db)
 
 		_ = http.ListenAndServe(fmt.Sprintf(":%d", s.port), nil)
 

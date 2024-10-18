@@ -64,7 +64,6 @@ func TestTranslation(t *testing.T) {
 	if draft.OrderReference != "12345" {
 		t.Errorf("Order reference should match reference: %v, expected 12345", draft.OrderReference)
 	}
-
 	if strings.Contains(draft.Receiver.Address.PostalCode, " ") {
 		t.Errorf("Postal code shouldn't contain any whitespace")
 	}

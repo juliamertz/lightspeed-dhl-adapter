@@ -5,8 +5,6 @@ import (
 	"lightspeed-dhl/config"
 	"lightspeed-dhl/database"
 	"lightspeed-dhl/dhl"
-	"lightspeed-dhl/logger"
-	"lightspeed-dhl/server"
 	"net/http"
 	"os"
 
@@ -34,10 +32,10 @@ func main() {
 	client := dhl.New(conf, dhl.DefaultCluster)
   client.Authenticate()
 
-	logger.SetupLogger(conf)
+	SetupLogger(conf)
 
-  server.RegisterMancoHandler(conf)
-  server.RegisterLightspeedWebhookHandler(conf, &client, db)
+  RegisterMancoHandler(conf)
+  RegisterLightspeedWebhookHandler(conf, &client, db)
 
   dhl.StartPolling(&client, conf, db)
 

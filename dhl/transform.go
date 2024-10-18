@@ -42,7 +42,22 @@ func WebhookToDraft(incoming lightspeed.IncomingOrder, conf *config.Secrets) Dra
 			{ParcelType: "MEDIUM"},
 		},
 
-		Shipper:   ShipperFromConfig(conf.CompanyInfo),
+		Shipper: Shipper{
+			Name: Name{
+				CompanyName: conf.CompanyInfo.Name,
+			},
+			Address: Address{
+				IsBusiness:  true,
+				Street:      conf.CompanyInfo.Street,
+				Number:      conf.CompanyInfo.Number,
+				Addition:    conf.CompanyInfo.Addition,
+				PostalCode:  conf.CompanyInfo.PostalCode,
+				City:        conf.CompanyInfo.City,
+				CountryCode: conf.CompanyInfo.CountryCode,
+			},
+			Email:       conf.CompanyInfo.Email,
+			PhoneNumber: conf.CompanyInfo.PhoneNumber,
+		},
 		AccountId: conf.Dhl.AccountId,
 	}
 }
