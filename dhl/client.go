@@ -179,7 +179,7 @@ func (c *Client) CreateDraft(draft *Draft) (error, *http.Response) {
 		return err, nil
 	}
 
-	// assert that we are authenticated at all times, also check if session is expired, in that case we re-authenticate
+  // TODO: assert that we are authenticated at all times, also check if session is expired, in that case we re-authenticate
 
 	res, err := c.request("drafts", "POST", &body)
 	if err != nil {

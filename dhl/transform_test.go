@@ -1,8 +1,6 @@
 package dhl_test
 
 import (
-	// "regexp"
-
 	"lightspeed-dhl/config"
 	"lightspeed-dhl/dhl"
 	"lightspeed-dhl/lightspeed"

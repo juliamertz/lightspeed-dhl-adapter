@@ -22,12 +22,14 @@ func RegisterMancoHandler(conf *config.Secrets) {
 			data, err := lightspeed.GetStockUnderThreshold(conf)
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to get stock under threshold")
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
 			encoded, err := json.Marshal(data)
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to encode stock data")
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
@@ -35,6 +37,9 @@ func RegisterMancoHandler(conf *config.Secrets) {
 			w.Header().Set("Content-Type", "application/json")
 
 			fmt.Fprintln(w, string(encoded))
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 	})
 }
@@ -46,6 +51,7 @@ func RegisterLightspeedWebhookHandler(conf *config.Secrets, client *dhl.Client, 
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				log.Err(err).Msg("Failed to read request body")
+				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 
@@ -53,6 +59,7 @@ func RegisterLightspeedWebhookHandler(conf *config.Secrets, client *dhl.Client, 
 			err = json.Unmarshal(body, &orderData)
 			if err != nil {
 				log.Err(err).Msg("Failed to unmarshal request body")
+				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 
@@ -65,6 +72,7 @@ func RegisterLightspeedWebhookHandler(conf *config.Secrets, client *dhl.Client, 
 				err, _ = client.CreateDraft(&draft)
 				if err != nil {
 					log.Err(err).Msg("Failed to create draft in DHL")
+					w.WriteHeader(http.StatusInternalServerError)
 					return
 				}
 
@@ -74,12 +82,15 @@ func RegisterLightspeedWebhookHandler(conf *config.Secrets, client *dhl.Client, 
 			err = db.CreateDraft(draft.Id, draft.OrderReference, orderData.Order.Number)
 			if err != nil {
 				log.Err(err).Msg("Failed to create draft in database")
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
 			log.Info().Str("Order reference", orderData.Order.Number).Msg("Draft created in database")
 
 			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 	})
 }
