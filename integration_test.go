@@ -43,11 +43,6 @@ func newServer(t *testing.T) TestServer {
 }
 
 func TestMain(t *testing.T) {
-	// gofakeit.Seed(8675309)
-	// var mockDraft dhl.Draft
-	// gofakeit.Struct(&mockDraft)
-	// t.Fatalf("mockdraft: %v", mockDraft)
-
 	// TODO: tailored test config
 	conf, err := config.LoadSecrets("./config.toml")
 	if err != nil {
@@ -175,8 +170,6 @@ func startMockDhlApi(s *TestServer) {
 
 		http.HandleFunc("/authenticate/api-key", func(w http.ResponseWriter, r *http.Request) {
 			if r.Method == "POST" {
-				// TODO: Check if request is valid
-
 				w.Header().Set("Access-Control-Allow-Origin", "*")
 				w.Header().Set("Content-Type", "application/json")
 
@@ -215,7 +208,6 @@ func startMockDhlApi(s *TestServer) {
 
 		// http.HandleFunc("/labels", func(w http.ResponseWriter, r *http.Request) {
 		// 	if r.Method == "GET" {
-		// 		// TODO: get some data
 		// 		labels := []dhl.Label{
 		// 			{},
 		// 		}

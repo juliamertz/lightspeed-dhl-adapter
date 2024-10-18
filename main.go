@@ -4,23 +4,24 @@ import (
 	"fmt"
 	"lightspeed-dhl/config"
 	"lightspeed-dhl/database"
-	"lightspeed-dhl/server"
 	"lightspeed-dhl/dhl"
 	"lightspeed-dhl/logger"
+	"lightspeed-dhl/server"
 	"net/http"
+	"os"
 
-	"github.com/alecthomas/kong"
 	"github.com/rs/zerolog/log"
 )
 
-var CLI struct {
-	Config string `arg:"" name:"path" help:"Path to configuration file" type:"path"`
-}
-
 func main() {
-	cli := kong.Parse(&CLI)
+  var configPath string;
+  if len(os.Args) < 2 {
+    configPath = "./config.toml"
+  } else {
+    configPath = os.Args[1]
+  }
 
-	conf, err := config.LoadSecrets(cli.Args[0])
+	conf, err := config.LoadSecrets(configPath)
 	if err != nil {
 		panic("Failed to load secrets")
 	}
@@ -34,13 +35,9 @@ func main() {
   client.Authenticate()
 
 	logger.SetupLogger(conf)
-	// TODO: set up route handlers
 
   server.RegisterMancoHandler(conf)
   server.RegisterLightspeedWebhookHandler(conf, &client, db)
-
-  // fmt.Printf("%v", client.GetSession())
-  // os.Exit(1)
 
   dhl.StartPolling(&client, conf, db)
 

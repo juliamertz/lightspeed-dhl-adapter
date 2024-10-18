@@ -13,8 +13,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// TODO: Respond with proper status codes
-
 func RegisterMancoHandler(conf *config.Secrets) {
 	http.HandleFunc("/stock-under-threshold", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug().Str("Method", r.Method).Msg("Received request for stock under threshold")

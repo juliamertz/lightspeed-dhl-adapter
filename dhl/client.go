@@ -94,8 +94,6 @@ func (c *Client) request(endpoint string, method string, body *[]byte) (*http.Re
 	return res, nil
 }
 
-// TODO: Make sure session gets properly revalidated once the refreshtoken has expired
-// Returns a session as long as there is a valid way to obtain it without having to re-authenticate
 func (c *Client) GetSession() *AuthSession {
 	if c.Session != nil {
 		expired := c.Session.AccessTokenExpired()
@@ -135,7 +133,6 @@ type RefreshTokenRequest struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
-// TODO: Test this function
 func (c *Client) RefreshSession() error {
 	if c.Session == nil {
 		return errors.New("Session has not been initialized")
@@ -200,8 +197,6 @@ func (c *Client) CreateDraft(draft *Draft) (error, *http.Response) {
 	if err != nil {
 		return err, nil
 	}
-
-	// TODO: assert that we are authenticated at all times, also check if session is expired, in that case we re-authenticate
 
 	res, err := c.request("drafts", "POST", &body)
 	if err != nil {
