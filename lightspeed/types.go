@@ -1,5 +1,7 @@
 package lightspeed
 
+// import "github.com/brianvoe/gofakeit/v7"
+
 type IncomingOrder struct {
 	Order Order `json:"order"`
 }
@@ -8,10 +10,10 @@ type IncomingOrder struct {
 // https://developers.lightspeedhq.com/ecom/endpoints/order
 type Order struct {
 	Id            int    `json:"id"`
-	Email         string `json:"email"`
-	Firstname     string `json:"firstname"`
-	Lastname      string `json:"lastname"`
-	Middlename    string `json:"middlename"`
+  Email         string `json:"email" fake:"{email}"`
+	Firstname     string `json:"firstname" fake:"{firstname}"`
+	Lastname      string `json:"lastname" fake:"{lastname}"`
+	Middlename    string `json:"middlename" fake:"{middlename}"`
 	CompanyName   string `json:"companyName"`
 	Phone         string `json:"phone"`
 	ShipmentTitle string `json:"shipmentTitle"`

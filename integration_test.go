@@ -17,11 +17,37 @@ import (
 	"sync"
 	"testing"
 	"time"
-
-	"github.com/rs/zerolog/log"
 )
 
+type TestServer struct {
+	t    *testing.T
+	wg   *sync.WaitGroup
+	quit chan struct{}
+	port int
+}
+
+func (s *TestServer) close() {
+	close(s.quit)
+	s.wg.Wait()
+}
+
+func newServer(t *testing.T) TestServer {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	return TestServer{
+		wg:   &wg,
+		quit: make(chan struct{}),
+		port: randomPort(t),
+		t:    t,
+	}
+}
+
 func TestMain(t *testing.T) {
+	// gofakeit.Seed(8675309)
+	// var mockDraft dhl.Draft
+	// gofakeit.Struct(&mockDraft)
+	// t.Fatalf("mockdraft: %v", mockDraft)
+
 	// TODO: tailored test config
 	conf, err := config.LoadSecrets("./config.toml")
 	if err != nil {
@@ -38,23 +64,19 @@ func TestMain(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to initialize database")
 	}
+	t.Cleanup(func() { os.Remove("./tmp.db") })
 
-	testServerPort := randomPort(t)
-	dhlMockPort := randomPort(t)
+	testServer := newServer(t)
+	dhlMockServer := newServer(t)
 
-	client := dhl.New(&conf.Dhl, fmt.Sprintf("http://localhost:%d", dhlMockPort))
+	client := dhl.New(conf, fmt.Sprintf("http://localhost:%d", dhlMockServer.port))
 	client.Authenticate(conf.Dhl)
 
-	var wg sync.WaitGroup
-  // TODO: you left of here, maybe make struct containing wg and quit etc.
-	quit := make(chan struct{})
-
-	wg.Add(2)
-	go startTestServer(&wg, quit, testServerPort, conf, &client, db)
-	go startMockDhlApi(&wg, quit, dhlMockPort)
+	go startTestServer(&testServer, conf, &client, db)
+	go startMockDhlApi(&dhlMockServer)
 
 	// Test manco scraper
-	testServerUrl := fmt.Sprintf("http://localhost:%d", testServerPort)
+	testServerUrl := fmt.Sprintf("http://localhost:%d", testServer.port)
 
 	res, err := http.Get(fmt.Sprintf("%s/stock-under-threshold", testServerUrl))
 	if err != nil {
@@ -98,34 +120,55 @@ func TestMain(t *testing.T) {
 		t.Fatalf("draft not created in database, error: %v", err)
 	}
 
-	close(quit)
-	wg.Wait()
+	testServer.close()
 
-	fmt.Println("Server shut down, test finished.")
+	// // Test order status updating
+	// orders, err := db.GetUnprocessed()
+	// if err != nil {
+	// 	t.Fatalf("Failed to get unprocessed orders, error: %v", err)
+	// 	return
+	// }
+	
+  // TODO: find meaningful way to test this
+	// log.Info().Int("Entries in database", len(orders)).Msg("Polling for labels")
+	// for i := range orders {
+	// 	order := orders[i]
+	// 	// "cancelled" / "completed_shipped" / "processing_awaiting_shipment"
+	// 	status, label, err := dhl.CheckOrderStatus(&client, conf, &order)
+	// 	if err != nil {
+	// 		t.Fatalf("Unable to get order status, error: %v", err)
+	// 	}
+	//
+	// 	if status != dhl.StatusOk {
+	// 		t.Fatalf("Expected status %v got: %v", dhl.StatusOk, status)
+	// 	}
+	//
+	// 	err = dhl.UpdateOrderStatus(&client, db, conf, &order, label, status)
+	// 	if status != dhl.StatusOk {
+	// 		t.Fatalf("Unable to update order status, error: %v", err)
+	// 	}
+	// }
 
-	// dhl.StartPolling(&client, conf, db)
-
-	os.Remove("./tmp.db")
+	dhlMockServer.close()
 }
 
 // TODO: Test unhappy paths
-// TODO: refactor this function so it can be used for tests and normal
-func startTestServer(wg *sync.WaitGroup, quit chan struct{}, port int, conf *config.Secrets, client *dhl.Client, db *database.DB) {
-	defer wg.Done()
+func startTestServer(s *TestServer, conf *config.Secrets, client *dhl.Client, db *database.DB) {
+	defer s.wg.Done()
 
 	go func() {
 		server.RegisterMancoHandler(conf)
 		server.RegisterLightspeedWebhookHandler(conf, client, db)
 
-		_ = http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+		_ = http.ListenAndServe(fmt.Sprintf(":%d", s.port), nil)
 
 	}()
 
-	<-quit
+	<-s.quit
 }
 
-func startMockDhlApi(wg *sync.WaitGroup, quit chan struct{}, port int) {
-	defer wg.Done()
+func startMockDhlApi(s *TestServer) {
+	defer s.wg.Done()
 
 	go func() {
 
@@ -144,8 +187,7 @@ func startMockDhlApi(wg *sync.WaitGroup, quit chan struct{}, port int) {
 				}
 				encoded, err := json.Marshal(mockAuth)
 				if err != nil {
-					fmt.Printf("Unable to marshal mock order, error: %v", err)
-					os.Exit(1)
+					s.t.Fatalf("Unable to marshal mock order, error: %v", err)
 				}
 
 				fmt.Fprintln(w, string(encoded))
@@ -157,28 +199,43 @@ func startMockDhlApi(wg *sync.WaitGroup, quit chan struct{}, port int) {
 			if r.Method == "POST" {
 				body, err := io.ReadAll(r.Body)
 				if err != nil {
-					log.Err(err).Msg("Failed to read request body")
-					w.WriteHeader(http.StatusBadRequest)
-					return
+					s.t.Fatalf("Failed to read request body")
 				}
 
 				var draft dhl.Draft
 				err = json.Unmarshal(body, &draft)
 				if err != nil {
-					log.Err(err).Msg("Failed to unmarshal request body")
-					w.WriteHeader(http.StatusBadRequest)
-					return
+					s.t.Fatalf("Failed to unmarshal request body")
 				}
 
 				w.WriteHeader(http.StatusCreated)
 			}
 		})
 
-		_ = http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+		// http.HandleFunc("/labels", func(w http.ResponseWriter, r *http.Request) {
+		// 	if r.Method == "GET" {
+		// 		// TODO: get some data
+		// 		labels := []dhl.Label{
+		// 			{},
+		// 		}
+		// 		ser, err := json.Marshal(labels)
+		// 		if err != nil {
+		// 			log.Err(err).Msg("Failed to marshal response body")
+		// 			w.WriteHeader(http.StatusInternalServerError)
+		// 			return
+		// 		}
+		//
+		// 		w.Header().Set("Content-Type", "application/json")
+		// 		fmt.Fprintln(w, string(ser))
+		// 		w.WriteHeader(http.StatusOK)
+		// 	}
+		// })
+
+		_ = http.ListenAndServe(fmt.Sprintf(":%d", s.port), nil)
 
 	}()
 
-	<-quit
+	<-s.quit
 }
 
 func MockLightspeedOrder() lightspeed.IncomingOrder {

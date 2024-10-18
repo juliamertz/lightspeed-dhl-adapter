@@ -22,10 +22,10 @@ type Client struct {
 
 const DefaultCluster = "https://api-gw.dhlparcel.nl"
 
-func New(credentials *config.Dhl, cluster string) Client {
+func New(conf *config.Secrets, cluster string) Client {
 	return Client{
 		Cluster:     cluster,
-		credentials: credentials,
+		credentials: &conf.Dhl,
 		session:     nil,
 	}
 }
@@ -225,7 +225,7 @@ func (c *Client) GetDrafts() ([]Draft, error) {
 	return result, nil
 }
 
-func (c *Client) GetLabelByReference(reference int, conf *config.Secrets) (*Label, error) {
+func (c *Client) GetLabelByReference(reference int) (*Label, error) {
 	uri := fmt.Sprintf("labels?orderReferenceFilter=%v", reference)
 	res, err := c.request(uri, "GET", nil)
 	if err != nil {
