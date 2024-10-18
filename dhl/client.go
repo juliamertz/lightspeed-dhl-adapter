@@ -55,11 +55,6 @@ func (s *AuthSession) AccessTokenExpired() bool {
 }
 
 func (c *Client) request(endpoint string, method string, body *[]byte) (*http.Response, error) {
-	session := c.GetSession()
-	if session == nil {
-
-	}
-
 	endpoint = strings.TrimPrefix(endpoint, "/")
 	url := fmt.Sprintf("%s/%s", c.Cluster, endpoint)
 
@@ -68,7 +63,7 @@ func (c *Client) request(endpoint string, method string, body *[]byte) (*http.Re
 		return nil, err
 	}
 
-	if session != nil {
+	if c.session != nil {
 		req.Header.Set("Authorization", "Bearer "+c.session.AccessToken)
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -112,18 +107,28 @@ func (c *Client) GetSession() *AuthSession {
 		expired = c.session.AccessTokenExpired()
 		fmt.Printf("refresh expired: %v\n", expired)
 		if !c.session.RefreshTokenExpired() {
-			return nil
-			// err := c.RefreshSession()
-			// if err != nil {
-			// 	log.Warn().Msg(fmt.Sprintf("unable to refresh session token, error: %e", err))
-			// 	return nil
-			// }
+			err := c.RefreshSession()
+			if err != nil {
+				log.Warn().Msg(fmt.Sprintf("unable to refresh session token, error: %e", err))
+				return nil
+			}
 
 			return c.session
 		}
 	}
 
-	return nil
+	err := c.Authenticate()
+	if err != nil {
+		log.Warn().Msg(fmt.Sprintf("unable to authenticate with dhl, error: %e", err))
+		return nil
+	}
+
+	if c.session == nil {
+		log.Err(errors.New("authentication passed but no session is set, you screwed up big time..."))
+		return nil
+	}
+
+	return c.session
 }
 
 // TODO: Test this function
@@ -163,8 +168,12 @@ func (c *Client) RefreshSession() error {
 	return nil
 }
 
-func (c *Client) Authenticate(credentials config.Dhl) error {
-	body, err := json.Marshal(credentials)
+func (c *Client) Authenticate() error {
+	if c.credentials == nil {
+		return errors.New("Client credentials are not set")
+	}
+
+	body, err := json.Marshal(c.credentials)
 	if err != nil {
 		return err
 	}

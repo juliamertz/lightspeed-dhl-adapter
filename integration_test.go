@@ -70,7 +70,7 @@ func TestMain(t *testing.T) {
 	dhlMockServer := newServer(t)
 
 	client := dhl.New(conf, fmt.Sprintf("http://localhost:%d", dhlMockServer.port))
-	client.Authenticate(conf.Dhl)
+	client.Authenticate()
 
 	go startTestServer(&testServer, conf, &client, db)
 	go startMockDhlApi(&dhlMockServer)
@@ -130,6 +130,7 @@ func TestMain(t *testing.T) {
 	// }
 	
   // TODO: find meaningful way to test this
+
 	// log.Info().Int("Entries in database", len(orders)).Msg("Polling for labels")
 	// for i := range orders {
 	// 	order := orders[i]

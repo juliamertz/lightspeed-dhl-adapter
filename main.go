@@ -31,7 +31,7 @@ func main() {
 	}
   
 	client := dhl.New(conf, dhl.DefaultCluster)
-  client.Authenticate(conf.Dhl)
+  client.Authenticate()
 
 	logger.SetupLogger(conf)
 	// TODO: set up route handlers

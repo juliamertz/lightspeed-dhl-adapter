@@ -6,7 +6,7 @@ import (
 )
 
 func Assert(statement bool, msg string) {
-	if statement {
+	if !statement {
 		fmt.Printf("Assertion failed: %s", msg)
 		os.Exit(1)
 	}
