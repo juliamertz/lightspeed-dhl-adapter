@@ -15,7 +15,7 @@ import (
 )
 
 type Client struct {
-	session     *AuthSession
+	Session     *AuthSession
 	credentials *config.Dhl
 	Cluster     string
 }
@@ -26,7 +26,7 @@ func New(conf *config.Secrets, cluster string) Client {
 	return Client{
 		Cluster:     cluster,
 		credentials: &conf.Dhl,
-		session:     nil,
+		Session:     nil,
 	}
 }
 
@@ -63,8 +63,8 @@ func (c *Client) request(endpoint string, method string, body *[]byte) (*http.Re
 		return nil, err
 	}
 
-	if c.session != nil {
-		req.Header.Set("Authorization", "Bearer "+c.session.AccessToken)
+	if c.Session != nil {
+		req.Header.Set("Authorization", "Bearer "+c.Session.AccessToken)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
@@ -97,23 +97,23 @@ func (c *Client) request(endpoint string, method string, body *[]byte) (*http.Re
 // TODO: Make sure session gets properly revalidated once the refreshtoken has expired
 // Returns a session as long as there is a valid way to obtain it without having to re-authenticate
 func (c *Client) GetSession() *AuthSession {
-	if c.session != nil {
-		expired := c.session.AccessTokenExpired()
+	if c.Session != nil {
+		expired := c.Session.AccessTokenExpired()
 		fmt.Printf("access token expired: %v\n", expired)
-		if !c.session.AccessTokenExpired() {
-			return c.session
+		if !c.Session.AccessTokenExpired() {
+			return c.Session
 		}
 
-		expired = c.session.AccessTokenExpired()
+		expired = c.Session.AccessTokenExpired()
 		fmt.Printf("refresh expired: %v\n", expired)
-		if !c.session.RefreshTokenExpired() {
+		if !c.Session.RefreshTokenExpired() {
 			err := c.RefreshSession()
 			if err != nil {
 				log.Warn().Msg(fmt.Sprintf("unable to refresh session token, error: %e", err))
 				return nil
 			}
 
-			return c.session
+			return c.Session
 		}
 	}
 
@@ -123,30 +123,31 @@ func (c *Client) GetSession() *AuthSession {
 		return nil
 	}
 
-	if c.session == nil {
+	if c.Session == nil {
 		log.Err(errors.New("authentication passed but no session is set, you screwed up big time..."))
 		return nil
 	}
 
-	return c.session
+	return c.Session
+}
+
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refreshToken"`
 }
 
 // TODO: Test this function
 func (c *Client) RefreshSession() error {
-	if c.session == nil {
+	if c.Session == nil {
 		return errors.New("Session has not been initialized")
 	}
 
-	if c.session.RefreshTokenExpired() {
+	if c.Session.RefreshTokenExpired() {
 		return errors.New("Refresh token has expired")
 	}
 
-	body, err := json.Marshal(struct {
-		refreshToken string
-	}{
-		refreshToken: c.session.RefreshToken,
+	body, err := json.Marshal(RefreshTokenRequest{
+		RefreshToken: c.Session.RefreshToken,
 	})
-
 	if err != nil {
 		return err
 	}
@@ -160,7 +161,7 @@ func (c *Client) RefreshSession() error {
 		return errors.New("Received non 200 statuscode for refresh-token request")
 	}
 
-	err = json.NewDecoder(res.Body).Decode(&c.session)
+	err = json.NewDecoder(res.Body).Decode(&c.Session)
 	if err != nil {
 		return err
 	}
@@ -190,7 +191,7 @@ func (c *Client) Authenticate() error {
 		return err
 	}
 
-	c.session = &data
+	c.Session = &data
 	return nil
 }
 
