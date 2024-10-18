@@ -1,6 +1,8 @@
 package database
 
 import (
+	"fmt"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -20,6 +22,34 @@ func (db *DB) CreateDraft(dhlDraftId string, lightspeedOrderId string, lightspee
 func (db *DB) DeleteDraft(dhlDraftId string) error {
 	_, err := db.Conn.Exec(`DELETE FROM orders WHERE dhlDraftId=?`, dhlDraftId)
 	return err
+}
+
+func (db *DB) GetDraft(lightspeedOrderId int) (*Order, error) {
+	rows, err := db.Conn.Query(`SELECT * FROM orders WHERE lightspeedOrderId = ?;`, lightspeedOrderId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		order := Order{}
+		err = rows.Scan(
+			&order.DhlDraftId,
+			&order.DhlShipmentId,
+			&order.LightspeedOrderId,
+			&order.LightspeedOrderNumber,
+			&order.IsProcessed,
+			&order.Id,
+			&order.CreatedAt,
+			&order.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		return &order, nil
+	}
+
+	return nil, fmt.Errorf("No order found with order id: %d", lightspeedOrderId)
 }
 
 func (db *DB) SetShipmentId(dhlDraftId string, dhlShipmentId string) error {

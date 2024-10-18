@@ -15,14 +15,18 @@ import (
 )
 
 type Client struct {
-	session *AuthSession
-	Cluster string
+	session     *AuthSession
+	credentials *config.Dhl
+	Cluster     string
 }
 
-func New() Client {
+const DefaultCluster = "https://api-gw.dhlparcel.nl"
+
+func New(credentials *config.Dhl, cluster string) Client {
 	return Client{
-		Cluster: "https://api-gw.dhlparcel.nl",
-		session: nil,
+		Cluster:     cluster,
+		credentials: credentials,
+		session:     nil,
 	}
 }
 
@@ -34,20 +38,28 @@ type AuthSession struct {
 	AccountNumbers         []string `json:"accountNumbers"`
 }
 
-// TODO: make sure session exists
 func (s *AuthSession) RefreshTokenExpired() bool {
+	if s == nil {
+		return true
+	}
 	now := time.Now().Local().Unix()
 	return int64(s.RefreshTokenExpiration) < now
 }
 
-// TODO: make sure session exists
 func (s *AuthSession) AccessTokenExpired() bool {
+	if s == nil {
+		return true
+	}
 	now := time.Now().Local().Unix()
 	return int64(s.AccessTokenExpiration) < now
 }
 
 func (c *Client) request(endpoint string, method string, body *[]byte) (*http.Response, error) {
 	session := c.GetSession()
+	if session == nil {
+
+	}
+
 	endpoint = strings.TrimPrefix(endpoint, "/")
 	url := fmt.Sprintf("%s/%s", c.Cluster, endpoint)
 
@@ -87,7 +99,6 @@ func (c *Client) request(endpoint string, method string, body *[]byte) (*http.Re
 	return res, nil
 }
 
-// TODO: Test this function
 // TODO: Make sure session gets properly revalidated once the refreshtoken has expired
 // Returns a session as long as there is a valid way to obtain it without having to re-authenticate
 func (c *Client) GetSession() *AuthSession {
@@ -101,11 +112,12 @@ func (c *Client) GetSession() *AuthSession {
 		expired = c.session.AccessTokenExpired()
 		fmt.Printf("refresh expired: %v\n", expired)
 		if !c.session.RefreshTokenExpired() {
-			err := c.RefreshSession()
-			if err != nil {
-				log.Warn().Msg(fmt.Sprintf("unable to refresh session token, error: %e", err))
-				return nil
-			}
+			return nil
+			// err := c.RefreshSession()
+			// if err != nil {
+			// 	log.Warn().Msg(fmt.Sprintf("unable to refresh session token, error: %e", err))
+			// 	return nil
+			// }
 
 			return c.session
 		}
@@ -179,7 +191,7 @@ func (c *Client) CreateDraft(draft *Draft) (error, *http.Response) {
 		return err, nil
 	}
 
-  // TODO: assert that we are authenticated at all times, also check if session is expired, in that case we re-authenticate
+	// TODO: assert that we are authenticated at all times, also check if session is expired, in that case we re-authenticate
 
 	res, err := c.request("drafts", "POST", &body)
 	if err != nil {

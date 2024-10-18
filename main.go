@@ -30,7 +30,7 @@ func main() {
 		panic("Failed to initialize database")
 	}
   
-	client := dhl.New()
+	client := dhl.New(&conf.Dhl, dhl.DefaultCluster)
   client.Authenticate(conf.Dhl)
 
 	logger.SetupLogger(conf)

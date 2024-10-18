@@ -42,17 +42,16 @@ func TestMain(t *testing.T) {
 	testServerPort := randomPort(t)
 	dhlMockPort := randomPort(t)
 
-	client := dhl.Client{
-		Cluster: fmt.Sprintf("http://localhost:%d", dhlMockPort),
-	}
+	client := dhl.New(&conf.Dhl, fmt.Sprintf("http://localhost:%d", dhlMockPort))
 	client.Authenticate(conf.Dhl)
 
 	var wg sync.WaitGroup
+  // TODO: you left of here, maybe make struct containing wg and quit etc.
 	quit := make(chan struct{})
 
 	wg.Add(2)
 	go startTestServer(&wg, quit, testServerPort, conf, &client, db)
-	go startMockDhlApi(&wg, quit, dhlMockPort, conf, &client, db)
+	go startMockDhlApi(&wg, quit, dhlMockPort)
 
 	// Test manco scraper
 	testServerUrl := fmt.Sprintf("http://localhost:%d", testServerPort)
@@ -94,6 +93,11 @@ func TestMain(t *testing.T) {
 		t.Fatalf("Expected status code 200, got: %d", res.StatusCode)
 	}
 
+	_, err = db.GetDraft(orderData.Order.Id)
+	if err != nil {
+		t.Fatalf("draft not created in database, error: %v", err)
+	}
+
 	close(quit)
 	wg.Wait()
 
@@ -101,6 +105,7 @@ func TestMain(t *testing.T) {
 
 	// dhl.StartPolling(&client, conf, db)
 
+	os.Remove("./tmp.db")
 }
 
 // TODO: Test unhappy paths
@@ -119,7 +124,7 @@ func startTestServer(wg *sync.WaitGroup, quit chan struct{}, port int, conf *con
 	<-quit
 }
 
-func startMockDhlApi(wg *sync.WaitGroup, quit chan struct{}, port int, conf *config.Secrets, client *dhl.Client, db *database.DB) {
+func startMockDhlApi(wg *sync.WaitGroup, quit chan struct{}, port int) {
 	defer wg.Done()
 
 	go func() {
