@@ -1,131 +1,147 @@
 package dhl
 
 type Draft struct {
-	Id                 string             `json:"id"`
-	ShipmentId         string             `json:"shipmentId"`
-	OrderReference     string             `json:"orderReference"`
-	Receiver           Contact            `json:"receiver"`
-	BccEmails          []string           `json:"bccEmails"`
-	Shipper            Shipper            `json:"shipper"`
-	AccountId          string             `json:"accountId"`
-	Options            []Option           `json:"options"`
-	OnBehalfOf         Shipper            `json:"onBehalfOf"`
-	Product            string             `json:"product"`
-	CustomsDeclaration CustomsDeclaration `json:"customsDeclaration"`
-	ReturnLabel        bool               `json:"returnLabel"`
-	Pieces             []Piece            `json:"pieces"`
-	// DeliveryArea       DeliveryArea       `json:"deliveryArea"`
-	Metadata           Metadata           `json:"metadata"`
+	Id                 string              `json:"id,omitempty"`
+	ShipmentId         string              `json:"shipmentId,omitempty"`
+	OrderReference     string              `json:"orderReference,omitempty"`
+	Receiver           Contact             `json:"receiver,omitempty"`
+	BccEmails          []string            `json:"bccEmails,omitempty"`
+	Shipper            Shipper             `json:"shipper,omitempty"`
+	AccountId          string              `json:"accountId,omitempty"`
+	Options            []Option            `json:"options,omitempty"`
+	OnBehalfOf         *Shipper            `json:"onBehalfOf,omitempty"`
+	Product            string              `json:"product,omitempty"`
+	CustomsDeclaration *CustomsDeclaration `json:"customsDeclaration,omitempty"`
+	ReturnLabel        bool                `json:"returnLabel,omitempty"`
+	Pieces             []Piece             `json:"pieces,omitempty"`
+	// DeliveryArea       DeliveryArea       `json:"deliveryArea,omitempty"`
+	Metadata *Metadata `json:"metadata,omitempty"`
 }
 
 type Contact struct {
-	Name        Name    `json:"name"`
-	Address     Address `json:"address"`
-	Email       string  `json:"email"`
-	PhoneNumber string  `json:"phoneNumber"`
-	VatNumber   string  `json:"vatNumber"`
-	EoriNumber  string  `json:"eoriNumber"`
+	Name        *Name    `json:"name,omitempty"`
+	Address     *Address `json:"address,omitempty"`
+	Email       string   `json:"email,omitempty"`
+	PhoneNumber string   `json:"phoneNumber,omitempty"`
+	VatNumber   string   `json:"vatNumber,omitempty"`
+	EoriNumber  string   `json:"eoriNumber,omitempty"`
 }
 
 type Shipper struct {
-	Name        Name    `json:"name"`
-	Address     Address `json:"address"`
-	Email       string  `json:"email"`
-	PhoneNumber string  `json:"phoneNumber"`
-	VatNumber   string  `json:"vatNumber"`
-	EoriNumber  string  `json:"eoriNumber"`
-	RexNumber   string  `json:"rexNumber"`
+	Name        *Name    `json:"name,omitempty"`
+	Address     *Address `json:"address,omitempty"`
+	Email       string   `json:"email,omitempty"`
+	PhoneNumber string   `json:"phoneNumber,omitempty"`
+	VatNumber   string   `json:"vatNumber,omitempty"`
+	EoriNumber  string   `json:"eoriNumber,omitempty"`
+	RexNumber   string   `json:"rexNumber,omitempty"`
 }
 
 type Name struct {
-	FirstName      string `json:"firstName"`
-	LastName       string `json:"lastName"`
-	CompanyName    string `json:"companyName"`
-	AdditionalName string `json:"additionalName"`
+	FirstName      string `json:"firstName,omitempty"`
+	LastName       string `json:"lastName,omitempty"`
+	CompanyName    string `json:"companyName,omitempty"`
+	AdditionalName string `json:"additionalName,omitempty"`
 }
 
 type Address struct {
-	CountryCode           string `json:"countryCode"`
-	PostalCode            string `json:"postalCode"`
-	City                  string `json:"city"`
-	Street                string `json:"street"`
-	AdditionalAddressLine string `json:"additionalAddressLine"`
-	Number                string `json:"number"`
-	IsBusiness            bool   `json:"isBusiness"`
-	Addition              string `json:"addition"`
+	CountryCode           string `json:"countryCode,omitempty"`
+	PostalCode            string `json:"postalCode,omitempty"`
+	City                  string `json:"city,omitempty"`
+	Street                string `json:"street,omitempty"`
+	AdditionalAddressLine string `json:"additionalAddressLine,omitempty"`
+	Number                string `json:"number,omitempty"`
+	IsBusiness            bool   `json:"isBusiness,omitempty"`
+	Addition              string `json:"addition,omitempty"`
 }
 
 type Option struct {
-	Key   string `json:"key"`
-	Input string `json:"input"`
+	Key   string `json:"key,omitempty"`
+	Input string `json:"input,omitempty"`
+}
+
+type Label struct {
+	LabelId        string `json:"labelId,omitempty"`
+	OrderReference string `json:"orderReference,omitempty"`
+	ParcelType     string `json:"parcelType,omitempty"`
+	LabelType      string `json:"labelType,omitempty"`
+	PieceNumber    int    `json:"pieceNumber,omitempty"`
+	TrackerCode    string `json:"trackerCode,omitempty"`
+	RoutingCode    string `json:"routingCode,omitempty"`
+	UserId         string `json:"userId,omitempty"`
+	OrganisationId string `json:"organisationId,omitempty"`
+	Application    string `json:"application,omitempty"`
+	TimeCreated    string `json:"timeCreated,omitempty"`
+	ShipmentId     string `json:"shipmentId,omitempty"`
+	AccountNumber  string `json:"accountNumber,omitempty"`
 }
 
 type CustomsDeclaration struct {
-	CertificateNumber          string        `json:"certificateNumber"`
-	Currency                   string        `json:"currency"`
-	InvoiceNumber              string        `json:"invoiceNumber"`
-	LicenceNumber              string        `json:"licenceNumber"`
-	Remarks                    string        `json:"remarks"`
-	InvoiceType                string        `json:"invoiceType"`
-	ExportType                 string        `json:"exportType"`
-	ExportReason               string        `json:"exportReason"`
-	CustomsGoods               []CustomsGood `json:"customsGoods"`
-	IncoTerms                  string        `json:"incoTerms"`
-	IncoTermsCity              string        `json:"incoTermsCity"`
-	SenderInboundVatNumber     string        `json:"senderInboundVatNumber"`
-	AttachmentIds              []string      `json:"attachmentIds"`
-	ShippingFee                ShippingFee   `json:"shippingFee"`
-	ImporterOfRecord           Importer      `json:"importerOfRecord"`
-	DefermentAccountVat        string        `json:"defermentAccountVat"`
-	DefermentAccountDuties     string        `json:"defermentAccountDuties"`
-	VatReverseCharge           bool          `json:"vatReverseCharge"`
-	SenderHasInboundEoriNumber bool          `json:"senderHasInboundEoriNumber"`
+	CertificateNumber          string        `json:"certificateNumber,omitempty"`
+	Currency                   string        `json:"currency,omitempty"`
+	InvoiceNumber              string        `json:"invoiceNumber,omitempty"`
+	LicenceNumber              string        `json:"licenceNumber,omitempty"`
+	Remarks                    string        `json:"remarks,omitempty"`
+	InvoiceType                string        `json:"invoiceType,omitempty"`
+	ExportType                 string        `json:"exportType,omitempty"`
+	ExportReason               string        `json:"exportReason,omitempty"`
+	CustomsGoods               []CustomsGood `json:"customsGoods,omitempty"`
+	IncoTerms                  string        `json:"incoTerms,omitempty"`
+	IncoTermsCity              string        `json:"incoTermsCity,omitempty"`
+	SenderInboundVatNumber     string        `json:"senderInboundVatNumber,omitempty"`
+	AttachmentIds              []string      `json:"attachmentIds,omitempty"`
+	ShippingFee                ShippingFee   `json:"shippingFee,omitempty"`
+	ImporterOfRecord           Importer      `json:"importerOfRecord,omitempty"`
+	DefermentAccountVat        string        `json:"defermentAccountVat,omitempty"`
+	DefermentAccountDuties     string        `json:"defermentAccountDuties,omitempty"`
+	VatReverseCharge           bool          `json:"vatReverseCharge,omitempty"`
+	SenderHasInboundEoriNumber bool          `json:"senderHasInboundEoriNumber,omitempty"`
 }
 
 type CustomsGood struct {
-	Code        string  `json:"code"`
-	Description string  `json:"description"`
-	Origin      string  `json:"origin"`
-	Quantity    int     `json:"quantity"`
-	Value       float64 `json:"value"`
-	Weight      float64 `json:"weight"`
+	Code        string  `json:"code,omitempty"`
+	Description string  `json:"description,omitempty"`
+	Origin      string  `json:"origin,omitempty"`
+	Quantity    int     `json:"quantity,omitempty"`
+	Value       float64 `json:"value,omitempty"`
+	Weight      float64 `json:"weight,omitempty"`
 }
 
 type ShippingFee struct {
-	Value float64 `json:"value"`
+	Value float64 `json:"value,omitempty"`
 }
 
 type Importer struct {
-	Name        Name    `json:"name"`
-	Address     Address `json:"address"`
-	Email       string  `json:"email"`
-	PhoneNumber string  `json:"phoneNumber"`
-	VatNumber   string  `json:"vatNumber"`
-	EoriNumber  string  `json:"eoriNumber"`
+	Name        Name     `json:"name,omitempty"`
+	Address     *Address `json:"address,omitempty"`
+	Email       string   `json:"email,omitempty"`
+	PhoneNumber string   `json:"phoneNumber,omitempty"`
+	VatNumber   string   `json:"vatNumber,omitempty"`
+	EoriNumber  string   `json:"eoriNumber,omitempty"`
 }
 
 type Piece struct {
-	ParcelType string      `json:"parcelType"`
-	Quantity   int32       `json:"quantity"`
-	Weight     float64     `json:"weight"`
-	Dimensions *Dimensions `json:"dimensions"`
+	ParcelType string      `json:"parcelType,omitempty"`
+	Quantity   int32       `json:"quantity,omitempty"`
+	Weight     float64     `json:"weight,omitempty"`
+	Dimensions *Dimensions `json:"dimensions,omitempty"`
 }
 
 type Dimensions struct {
-	Length float64 `json:"length"`
-	Width  float64 `json:"width"`
-	Height float64 `json:"height"`
+	Length float64 `json:"length,omitempty"`
+	Width  float64 `json:"width,omitempty"`
+	Height float64 `json:"height,omitempty"`
 }
 
 type DeliveryArea struct {
-	Type   string `json:"type"`
-	Remote bool   `json:"remote"`
+	Type   string `json:"type,omitempty"`
+	Remote bool   `json:"remote,omitempty"`
 }
 
 type Metadata struct {
-	ImportId       string `json:"importId"`
-	UserId         string `json:"userId"`
-	LastModifiedBy string `json:"lastModifiedBy"`
-	OrganizationId string `json:"organizationId"`
-	TimeCreated    string `json:"timeCreated"`
+	ImportId       string `json:"importId,omitempty"`
+	UserId         string `json:"userId,omitempty"`
+	LastModifiedBy string `json:"lastModifiedBy,omitempty"`
+	OrganizationId string `json:"organizationId,omitempty"`
+	TimeCreated    string `json:"timeCreated,omitempty"`
 }

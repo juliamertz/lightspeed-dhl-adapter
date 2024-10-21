@@ -50,11 +50,7 @@ func TestTranslation(t *testing.T) {
 		Order: order,
 	}
 
-	note := ""
-	conf := &config.Secrets{
-		CompanyInfo: config.CompanyInfo{PersonalNote: &note},
-	}
-
+	conf, _ := config.LoadSecrets("../config.toml")
 	draft := dhl.WebhookToDraft(incoming, conf)
 
 	if draft.Receiver.Address.Street != "456 Elm St" {
