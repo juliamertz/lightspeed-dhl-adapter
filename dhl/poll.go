@@ -110,12 +110,12 @@ func pollOrders(client *Client, conf *config.Secrets, db *database.DB) {
 
 		status, label, err := CheckOrderStatus(client, conf, &order)
 		if err != nil {
-			// TODO:
-			panic(err)
+      log.Err(err).Msg("Error while getting order status with dhl")
+      return
 		}
 
 		if status != StatusOk {
-			panic(status)
+      return
 		}
 
 		UpdateOrderStatus(client, db, conf, &order, label, status)
