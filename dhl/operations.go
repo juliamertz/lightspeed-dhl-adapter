@@ -35,9 +35,9 @@ func CreateDraft(draft *Draft, conf *config.Secrets) (error, *http.Response) {
 		return err, nil
 	}
 
-  if res.StatusCode != 201 {
-    return fmt.Errorf("Expected statuscode response 201, got %v", res.StatusCode), nil
-  }
+	if res.StatusCode != 201 {
+		return fmt.Errorf("Expected statuscode response 201, got %v", res.StatusCode), nil
+	}
 
 	return nil, res
 }
@@ -65,22 +65,6 @@ func GetDrafts(conf *config.Secrets) ([]Draft, error) {
 	}
 
 	return result, nil
-}
-
-type Label struct {
-	labelId        string
-	orderReference string
-	parcelType     string
-	labelType      string
-	pieceNumber    int
-	trackerCode    string
-	routingCode    string
-	userId         string
-	organisationId string
-	application    string
-	timeCreated    string
-	shipmentId     string
-	accountNumber  string
 }
 
 func GetLabelByReference(reference int, conf *config.Secrets) (*Label, error) {

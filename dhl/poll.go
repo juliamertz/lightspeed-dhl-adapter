@@ -43,11 +43,11 @@ func StartPolling(conf *config.Secrets) {
 				}
 
 				// Add extra information to logging context
-				logger = baseLogger.Str("Order reference", label.orderReference).Logger()
+				logger = baseLogger.Str("Order reference", label.OrderReference).Logger()
 
 				logger.Debug().Interface("Label", label).Msg("Label found")
 				// Set shipment id for this order in the database
-				err = database.SetShipmentId(*order.DhlDraftId, label.shipmentId)
+				err = database.SetShipmentId(*order.DhlDraftId, label.ShipmentId)
 				if err != nil {
 					logger.Err(err).Msg("Error setting shipment id")
 					continue

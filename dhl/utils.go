@@ -12,7 +12,7 @@ import (
 )
 
 func Request(endpoint string, method string, body *[]byte, auth *ApiTokenResponse) (*http.Response, error) {
-  endpoint = strings.TrimPrefix(endpoint, "/")
+	endpoint = strings.TrimPrefix(endpoint, "/")
 
 	url := fmt.Sprintf("https://api-gw.dhlparcel.nl/%s", endpoint)
 	req, err := http.NewRequest(method, url, nil)
@@ -48,10 +48,10 @@ func Request(endpoint string, method string, body *[]byte, auth *ApiTokenRespons
 
 func ShipperFromConfig(d config.CompanyInfo) Shipper {
 	return Shipper{
-		Name: Name{
+		Name: &Name{
 			CompanyName: d.Name,
 		},
-		Address: Address{
+		Address: &Address{
 			IsBusiness:  true,
 			Street:      d.Street,
 			Number:      d.Number,
