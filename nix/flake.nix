@@ -1,46 +1,59 @@
 {
   inputs.nixpkgs.url = "nixpkgs/nixos-unstable";
 
-  outputs = { self, nixpkgs }:
+  outputs =
+    { self, nixpkgs }:
     let
-      lastModifiedDate =
-        self.lastModifiedDate or self.lastModified or "19700101";
+      lastModifiedDate = self.lastModifiedDate or self.lastModified or "19700101";
       version = builtins.substring 0 8 lastModifiedDate;
-      supportedSystems =
-        [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ];
+      supportedSystems = [
+        "x86_64-linux"
+        "x86_64-darwin"
+        "aarch64-linux"
+        "aarch64-darwin"
+      ];
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
       nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; });
 
-    in {
+    in
+    {
 
-      packages = forAllSystems (system:
-        let pkgs = nixpkgsFor.${system};
+      packages = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgsFor.${system};
 
-        in {
+        in
+        {
           default = pkgs.buildGoModule {
             pname = "lightspeed-dhl-adapter";
             inherit version;
             src = ../.;
 
-            # vendorHash = "sha256-o2SNdqIx+YvpKh883rowk9/IlNnpSiutgvc29CAWKj4=";
-            vendorHash = "sha256-23QtnwIv4tivXGsZAYaTjB/M+30WO1tDFjTkN8OMBzw=";
+            vendorHash = "sha256-o2SNdqIx+YvpKh883rowk9/IlNnpSiutgvc29CAWKj4=";
             meta.mainProgram = "lightspeed-dhl";
- buildPhase = ''
-    export GOFLAGS="-mod=vendor"
-    go build .
-  '';
 
             GO_TEST = "none";
           };
-        });
+        }
+      );
 
-      devShells = forAllSystems (system:
-        let pkgs = nixpkgsFor.${system};
-        in {
+      devShells = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgsFor.${system};
+        in
+        {
           default = pkgs.mkShell {
-            buildInputs = with pkgs; [ go gopls gotools go-tools ];
+            buildInputs = with pkgs; [
+              go
+              gopls
+              gotools
+              go-tools
+            ];
           };
-        });
+        }
+      );
 
       defaultPackage = forAllSystems (system: self.packages.${system}.default);
     };
