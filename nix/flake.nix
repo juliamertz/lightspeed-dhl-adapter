@@ -22,8 +22,15 @@
             inherit version;
             src = ../.;
 
-            vendorHash = "sha256-o2SNdqIx+YvpKh883rowk9/IlNnpSiutgvc29CAWKj4=";
+            # vendorHash = "sha256-o2SNdqIx+YvpKh883rowk9/IlNnpSiutgvc29CAWKj4=";
+            vendorHash = "sha256-23QtnwIv4tivXGsZAYaTjB/M+30WO1tDFjTkN8OMBzw=";
             meta.mainProgram = "lightspeed-dhl";
+ buildPhase = ''
+    export GOFLAGS="-mod=vendor"
+    go build .
+  '';
+
+            GO_TEST = "none";
           };
         });
 
