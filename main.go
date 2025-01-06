@@ -10,6 +10,7 @@ import (
 	"lightspeed-dhl/lightspeed"
 	"lightspeed-dhl/logger"
 	"net/http"
+	"os"
 
 	"github.com/alecthomas/kong"
 	"github.com/rs/zerolog/log"
@@ -23,7 +24,8 @@ func main() {
 	cli := kong.Parse(&CLI)
 	conf, err := config.LoadSecrets(cli.Args[0])
 	if err != nil {
-		panic("Failed to load secrets")
+    fmt.Println("Error loading secrets: ", err)
+    os.Exit(1)
 	}
 
 	logger.SetupLogger(conf)
