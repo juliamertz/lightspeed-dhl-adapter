@@ -1,5 +1,8 @@
 package dhl
 
+// Omit empty is required so the DHL api doesn't get confused by empty strings etc when serializing the response data
+// This should never be used with boolean fields since 'false' values will also be ommited, wtf google? https://themirgleich.medium.com/how-golangs-omitempty-can-confuse-the-google-apis-c0e46d22d9ff
+
 type Draft struct {
 	Id                 string              `json:"id,omitempty"`
 	ShipmentId         string              `json:"shipmentId,omitempty"`
@@ -12,10 +15,10 @@ type Draft struct {
 	OnBehalfOf         *Shipper            `json:"onBehalfOf,omitempty"`
 	Product            string              `json:"product,omitempty"`
 	CustomsDeclaration *CustomsDeclaration `json:"customsDeclaration,omitempty"`
-	ReturnLabel        bool                `json:"returnLabel,omitempty"`
+	ReturnLabel        bool                `json:"returnLabel"`
 	Pieces             []Piece             `json:"pieces,omitempty"`
+	Metadata           *Metadata           `json:"metadata,omitempty"`
 	// DeliveryArea       DeliveryArea       `json:"deliveryArea,omitempty"`
-	Metadata *Metadata `json:"metadata,omitempty"`
 }
 
 type Contact struct {
@@ -51,7 +54,7 @@ type Address struct {
 	Street                string `json:"street,omitempty"`
 	AdditionalAddressLine string `json:"additionalAddressLine,omitempty"`
 	Number                string `json:"number,omitempty"`
-	IsBusiness            bool   `json:"isBusiness,omitempty"`
+	IsBusiness            bool   `json:"isBusiness"`
 	Addition              string `json:"addition,omitempty"`
 }
 
@@ -94,8 +97,8 @@ type CustomsDeclaration struct {
 	ImporterOfRecord           Importer      `json:"importerOfRecord,omitempty"`
 	DefermentAccountVat        string        `json:"defermentAccountVat,omitempty"`
 	DefermentAccountDuties     string        `json:"defermentAccountDuties,omitempty"`
-	VatReverseCharge           bool          `json:"vatReverseCharge,omitempty"`
-	SenderHasInboundEoriNumber bool          `json:"senderHasInboundEoriNumber,omitempty"`
+	VatReverseCharge           bool          `json:"vatReverseCharge"`
+	SenderHasInboundEoriNumber bool          `json:"senderHasInboundEoriNumber"`
 }
 
 type CustomsGood struct {
@@ -122,8 +125,8 @@ type Importer struct {
 
 type Piece struct {
 	ParcelType string      `json:"parcelType,omitempty"`
-	Quantity   int32       `json:"quantity,omitempty"`
-	Weight     float64     `json:"weight,omitempty"`
+	Quantity   int       `json:"quantity,omitempty"`
+	Weight     int     `json:"weight,omitempty"`
 	Dimensions *Dimensions `json:"dimensions,omitempty"`
 }
 
@@ -135,7 +138,7 @@ type Dimensions struct {
 
 type DeliveryArea struct {
 	Type   string `json:"type,omitempty"`
-	Remote bool   `json:"remote,omitempty"`
+	Remote bool   `json:"remote"`
 }
 
 type Metadata struct {

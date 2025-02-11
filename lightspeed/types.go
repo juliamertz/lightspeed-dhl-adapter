@@ -18,9 +18,15 @@ type Order struct {
 	Number        string `json:"number"`
 	IsCompany     bool   `json:"isCompany"`
 
-	Status string `json:"status"` // "cancelled" / "completed_shipped" / "processing_awaiting_shipment"
+	// "cancelled" / "completed_shipped" / "processing_awaiting_shipment"
+	Status string `json:"status"`
+	// "shipped" / "not_shipped"
+	ShipmentStatus string `json:"shipmentStatus"`
+
 	// PaymentStatus  string `json:"paymentStatus"`  // "paid" / "not_paid"
-	ShipmentStatus string `json:"shipmentStatus"` // "shipped" / "not_shipped"
+
+	// Combined weight of all products included in order
+	Weight int `json:"weight"`
 
 	AddressBillingStreet    string      `json:"addressBillingStreet"`
 	AddressBillingCity      string      `json:"addressBillingCity"`
