@@ -1,60 +1,43 @@
 {
-  inputs.nixpkgs.url = "nixpkgs/nixos-unstable";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    systems.url = "github:nix-systems/default";
+  };
 
   outputs =
-    { self, nixpkgs }:
+    {
+      nixpkgs,
+      systems,
+      ...
+    }:
     let
-      lastModifiedDate = self.lastModifiedDate or self.lastModified or "19700101";
-      version = builtins.substring 0 8 lastModifiedDate;
-      supportedSystems = [
-        "x86_64-linux"
-        "x86_64-darwin"
-        "aarch64-linux"
-        "aarch64-darwin"
-      ];
-      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
-      nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; });
-
+      forAllSystems =
+        function: nixpkgs.lib.genAttrs (import systems) (system: function nixpkgs.legacyPackages.${system});
     in
     {
+      packages = forAllSystems (pkgs: {
+        default = pkgs.buildGoModule {
+          pname = "lightspeed-dhl-adapter";
+          version = "0.1.0";
+          src = ../.;
 
-      packages = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgsFor.${system};
+          vendorHash = "sha256-o2SNdqIx+YvpKh883rowk9/IlNnpSiutgvc29CAWKj4=";
+          meta.mainProgram = "lightspeed-dhl";
 
-        in
-        {
-          default = pkgs.buildGoModule {
-            pname = "lightspeed-dhl-adapter";
-            inherit version;
-            src = ../.;
+          GO_TEST = "none";
+        };
+      });
 
-            vendorHash = "sha256-o2SNdqIx+YvpKh883rowk9/IlNnpSiutgvc29CAWKj4=";
-            meta.mainProgram = "lightspeed-dhl";
-
-            GO_TEST = "none";
-          };
-        }
-      );
-
-      devShells = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgsFor.${system};
-        in
-        {
-          default = pkgs.mkShell {
-            buildInputs = with pkgs; [
-              go
-              gopls
-              gotools
-              go-tools
-            ];
-          };
-        }
-      );
-
-      defaultPackage = forAllSystems (system: self.packages.${system}.default);
+      devShells = forAllSystems (pkgs: {
+        default = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            go
+            gopls
+            gotools
+            go-tools
+            golangci-lint
+          ];
+        };
+      });
     };
 }
