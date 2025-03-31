@@ -125,8 +125,8 @@ type Importer struct {
 
 type Piece struct {
 	ParcelType string      `json:"parcelType,omitempty"`
-	Quantity   int       `json:"quantity,omitempty"`
-	Weight     int     `json:"weight,omitempty"`
+	Quantity   int         `json:"quantity,omitempty"`
+	Weight     int         `json:"weight,omitempty"`
 	Dimensions *Dimensions `json:"dimensions,omitempty"`
 }
 

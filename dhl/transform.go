@@ -41,8 +41,8 @@ func WebhookToDraft(incoming lightspeed.IncomingOrder, conf *config.Secrets) Dra
 		Pieces: []Piece{
 			{
 				ParcelType: "MEDIUM",
-        // Lightspeed reports it's weight in kilo's while DHL expects grams
-				Weight:     incoming.Order.Weight / 1000,
+				// Lightspeed reports it's weight in kilo's while DHL expects grams
+				Weight: incoming.Order.Weight / 1000,
 			},
 		},
 
