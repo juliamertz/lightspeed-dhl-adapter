@@ -16,6 +16,8 @@ AccountId = "0700000"
 Cluster = "https://api.webshopapp.com/en/"
 Key     = ""
 Secret  = ""
+ShopId = ""
+ClusterId = ""
 
 [CompanyInfo]
 Name         = ""

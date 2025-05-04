@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -22,22 +20,9 @@ var CLI struct {
 	Config string `arg:"" name:"path" help:"Path to configuration file" type:"path"`
 }
 
-func validateSignature(r *http.Request, apiSecret string) (bool, error) {
-	signature := r.Header.Get("x-signature")
-	if signature == "" {
-		return false, fmt.Errorf("missing x-signature header")
-	}
-
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		return false, err
-	}
-
-	data := append(body, []byte(apiSecret)...)
-	hash := md5.Sum(data)
-	calculatedSig := hex.EncodeToString(hash[:])
-
-	return calculatedSig == signature, nil
+func validateRequest(r *http.Request, secrets *config.Secrets) bool {
+	return r.Header.Get("x-cluster-id") == secrets.Lightspeed.ClusterId &&
+		r.Header.Get("x-shop-id") == secrets.Lightspeed.ShopId
 }
 
 func main() {
@@ -80,15 +65,9 @@ func main() {
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
 		log.Info().Str("Method", r.Method).Msg("Received webhook")
 		if r.Method == "POST" {
-			valid, err := validateSignature(r, conf.Lightspeed.Key)
-			if err != nil {
-				log.Err(err).Stack().Msg("Failed to verify request signature")
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-
+			valid := validateRequest(r, conf)
 			if !valid {
-				log.Err(err).Stack().Msg("Request signature is invalid")
+				log.Err(err).Stack().Msg("Request cannot be verified")
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}

@@ -6,3 +6,4 @@ lightspeed-dhl
 .direnv
 .direnv/bin
 result
+.env

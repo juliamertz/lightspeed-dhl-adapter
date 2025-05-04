@@ -14,10 +14,12 @@ type Dhl struct {
 }
 
 type Lightspeed struct {
-	Key      string
-	Secret   string
-	Frontend string
-	Cluster  string
+	Key       string
+	Secret    string
+	Frontend  string
+	Cluster   string
+	ShopId    string
+	ClusterId string
 }
 
 type CompanyInfo struct {
@@ -90,7 +92,7 @@ func LoadSecrets(path string) (*Secrets, error) {
 		return nil, errors.New("DHL secrets are incomplete")
 	}
 
-	if secrets.Lightspeed.Key == "" || secrets.Lightspeed.Secret == "" || secrets.Lightspeed.Cluster == "" || secrets.Lightspeed.Frontend == "" {
+	if secrets.Lightspeed.Key == "" || secrets.Lightspeed.Secret == "" || secrets.Lightspeed.Cluster == "" || secrets.Lightspeed.Frontend == "" || secrets.Lightspeed.ClusterId == "" || secrets.Lightspeed.ShopId == "" {
 		return nil, errors.New("Lightspeed secrets are incomplete")
 	}
 

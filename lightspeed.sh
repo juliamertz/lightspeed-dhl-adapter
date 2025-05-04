@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
 
-key=""
-secret=""
-
 CLUSTER=https://api.webshopapp.com/nl
-AUTH="${key}:${secret}"
+AUTH="${LIGHTSPEED_KEY}:${LIGHTSPEED_SECRET}"
 
-# Create new webhook
+# # Create new webhook
 # curl -X POST $CLUSTER/webhooks.json \
 #   -u $AUTH \
 #   -d webhook[isActive]="true" \
@@ -14,11 +11,17 @@ AUTH="${key}:${secret}"
 #   -d webhook[itemAction]="created" \
 #   -d webhook[language]="nl" \
 #   -d webhook[format]="json" \
-#   -d webhook[address]="https://nettenshop.juliamertz.dev/webhook"
+#   -d webhook[address]="https://nettenshop-staging.juliamertz.dev/webhook"
 
-# Delete webhook
+# # Disable webhook
+# export WEBHOOK_ID=4680733
+# curl -X PUT "$CLUSTER/webhooks/$WEBHOOK_ID.json" \
+#   -u $AUTH \
+#   -d webhook[isActive]="true"
+
+# # Delete webhook
 # webhook_id=4421635
 # curl -X DELETE $CLUSTER/webhooks/${webhook_id}.json -u $AUTH
 
-# Get webhooks
+# # Get webhooks
 # curl $CLUSTER/webhooks.json -u $AUTH | jq

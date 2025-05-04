@@ -8,6 +8,8 @@ Frontend = "https://<subdomain>.webshopapp.com"
 Cluster = "https://api.webshopapp.com/en/"
 Key     = ""
 Secret  = ""
+ShopId = ""
+ClusterId = ""
 
 [CompanyInfo]
 Name         = ""
