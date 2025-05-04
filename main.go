@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -18,6 +20,24 @@ import (
 
 var CLI struct {
 	Config string `arg:"" name:"path" help:"Path to configuration file" type:"path"`
+}
+
+func validateSignature(r *http.Request, apiSecret string) (bool, error) {
+	signature := r.Header.Get("x-signature")
+	if signature == "" {
+		return false, fmt.Errorf("missing x-signature header")
+	}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return false, err
+	}
+
+	data := append(body, []byte(apiSecret)...)
+	hash := md5.Sum(data)
+	calculatedSig := hex.EncodeToString(hash[:])
+
+	return calculatedSig == signature, nil
 }
 
 func main() {
@@ -39,12 +59,14 @@ func main() {
 			data, err := lightspeed.GetStockUnderThreshold(conf)
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to get stock under threshold")
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
 			encoded, err := json.Marshal(data)
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to encode stock data")
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
@@ -58,9 +80,23 @@ func main() {
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
 		log.Info().Str("Method", r.Method).Msg("Received webhook")
 		if r.Method == "POST" {
+			valid, err := validateSignature(r, conf.Lightspeed.Key)
+			if err != nil {
+				log.Err(err).Stack().Msg("Failed to verify request signature")
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+
+			if !valid {
+				log.Err(err).Stack().Msg("Request signature is invalid")
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to read request body")
+				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 
@@ -68,6 +104,7 @@ func main() {
 			err = json.Unmarshal(body, &orderData)
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to unmarshal request body")
+				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 
@@ -80,6 +117,7 @@ func main() {
 				err, _ = dhl.CreateDraft(&draft, conf)
 				if err != nil {
 					log.Err(err).Stack().Msg("Failed to create draft in DHL")
+					w.WriteHeader(http.StatusInternalServerError)
 					return
 				}
 
@@ -89,6 +127,7 @@ func main() {
 			err = database.CreateDraft(draft.Id, draft.OrderReference, orderData.Order.Number)
 			if err != nil {
 				log.Err(err).Stack().Msg("Failed to create draft in database")
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
