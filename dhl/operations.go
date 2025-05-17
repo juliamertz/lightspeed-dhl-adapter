@@ -80,7 +80,7 @@ func GetLabelByReference(reference int, conf *config.Secrets) (*Label, error) {
 	}
 
 	if res.StatusCode == 404 {
-		log.Debug().Int("Order reference", reference).Msg("No label found")
+		log.Debug().Int("order_reference", reference).Msg("No label found")
 		return nil, nil
 	}
 
@@ -98,7 +98,7 @@ func GetLabelByReference(reference int, conf *config.Secrets) (*Label, error) {
 	}
 
 	if len(result) == 0 {
-		log.Debug().Int("Order reference", reference).Msg("No label found")
+		log.Debug().Int("order_reference", reference).Msg("No label found")
 		return nil, nil
 	}
 

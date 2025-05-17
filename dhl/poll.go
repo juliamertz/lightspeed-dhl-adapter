@@ -20,12 +20,12 @@ func StartPolling(conf *config.Secrets) {
 				continue
 			}
 
-			log.Info().Int("Entries in database", len(orders)).Msg("Polling for labels")
+			log.Info().Int("entries_in_database", len(orders)).Msg("Polling for labels")
 			for i := range orders {
 				order := orders[i]
 
 				// Create base of logging context
-				baseLogger := log.With().Stack().Int("Order number", *order.LightspeedOrderId).Str("DHL draft id", *order.DhlDraftId)
+				baseLogger := log.With().Stack().Int("order_number", *order.LightspeedOrderId).Str("DHL draft id", *order.DhlDraftId)
 				logger := baseLogger.Logger()
 
 				logger.Debug().Interface("order", order).Msg("Processing order")
@@ -43,9 +43,9 @@ func StartPolling(conf *config.Secrets) {
 				}
 
 				// Add extra information to logging context
-				logger = baseLogger.Str("Order reference", label.OrderReference).Logger()
+				logger = baseLogger.Str("order_reference", label.OrderReference).Logger()
 
-				logger.Debug().Interface("Label", label).Msg("Label found")
+				logger.Debug().Interface("label", label).Msg("Label found")
 				// Set shipment id for this order in the database
 				err = database.SetShipmentId(*order.DhlDraftId, label.ShipmentId)
 				if err != nil {

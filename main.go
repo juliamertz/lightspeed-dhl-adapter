@@ -39,7 +39,7 @@ func main() {
 	dhl.StartPolling(conf)
 
 	http.HandleFunc("/stock-under-threshold", func(w http.ResponseWriter, r *http.Request) {
-		log.Debug().Str("Method", r.Method).Msg("Received request for stock under threshold")
+		log.Debug().Str("method", r.Method).Msg("Received request for stock under threshold")
 		if r.Method == "GET" {
 			data, err := lightspeed.GetStockUnderThreshold(conf)
 			if err != nil {
@@ -63,7 +63,7 @@ func main() {
 	})
 
 	http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
-		log.Info().Str("Method", r.Method).Msg("Received webhook")
+		log.Info().Str("method", r.Method).Msg("Received webhook")
 		if r.Method == "POST" {
 			valid := validateRequest(r, conf)
 			if !valid {
@@ -87,10 +87,10 @@ func main() {
 				return
 			}
 
-			log.Debug().Interface("Order data", orderData).Msg("Received order data from webhook")
+			log.Debug().Interface("order_data", orderData).Msg("Received order data from webhook")
 
 			draft := dhl.WebhookToDraft(orderData, conf)
-			log.Debug().Interface("Draft", draft).Msg("Transformed order data to draft")
+			log.Debug().Interface("draft", draft).Msg("Transformed order data to draft")
 
 			if !*conf.Options.DryRun {
 				err, _ = dhl.CreateDraft(&draft, conf)
@@ -100,7 +100,7 @@ func main() {
 					return
 				}
 
-				log.Info().Str("Order reference", orderData.Order.Number).Msg("Draft created in DHL")
+				log.Info().Str("order_reference", orderData.Order.Number).Msg("Draft created in DHL")
 			}
 
 			err = database.CreateDraft(draft.Id, draft.OrderReference, orderData.Order.Number)
@@ -110,12 +110,12 @@ func main() {
 				return
 			}
 
-			log.Info().Str("Order reference", orderData.Order.Number).Msg("Draft created in database")
+			log.Info().Str("order_reference", orderData.Order.Number).Msg("Draft created in database")
 
 			w.WriteHeader(http.StatusOK)
 		}
 	})
 
-	log.Info().Int("Port", *conf.Options.Port).Msg("Starting server")
+	log.Info().Int("port", *conf.Options.Port).Msg("Starting server")
 	_ = http.ListenAndServe(fmt.Sprintf(":%d", *conf.Options.Port), nil)
 }
