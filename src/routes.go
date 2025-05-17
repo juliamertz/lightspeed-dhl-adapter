@@ -90,6 +90,7 @@ func handleLightspeedWebhook(w http.ResponseWriter, r *http.Request) {
 			logger.Info().Msg("Draft created in DHL")
 		}
 
+		unprocessedOrdersAmount.Inc()
 		err = database.CreateDraft(draft.Id, draft.OrderReference, orderData.Order.Number)
 		if err != nil {
 			logger.Err(err).Stack().Msg("Failed to create draft in database")

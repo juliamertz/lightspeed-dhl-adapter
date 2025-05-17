@@ -35,15 +35,15 @@ func setupLogging() {
 	}
 }
 
-var unprocessedOrdersAmount = prometheus.NewCounter(
-	prometheus.CounterOpts{
+var unprocessedOrdersAmount = prometheus.NewGauge(
+	prometheus.GaugeOpts{
 		Name: "nettenshop_unprocessed_orders_amount",
 		Help: "Total amount of unprocessed orders in database",
 	},
 )
 
-var processedOrdersAmount = prometheus.NewCounter(
-	prometheus.CounterOpts{
+var processedOrdersAmount = prometheus.NewGauge(
+	prometheus.GaugeOpts{
 		Name: "nettenshop_processed_orders_amount",
 		Help: "Total amount of processed orders in database",
 	},
@@ -58,7 +58,7 @@ func main() {
 	conf = config.LoadSecrets(cli.Args[0])
 
 	database.Initialize()
-	go dhl.StartPolling(&conf)
+	go dhl.StartPolling(&conf, processedOrdersAmount, unprocessedOrdersAmount)
 
 	setupPrometheus()
 

@@ -6,10 +6,11 @@ import (
 	"lightspeed-dhl/lightspeed"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog/log"
 )
 
-func StartPolling(conf *config.Secrets) {
+func StartPolling(conf *config.Secrets, processedCount prometheus.Gauge, unprocessedCount prometheus.Gauge) {
 	sleepDuration := time.Duration(conf.Options.PollingInterval) * time.Minute
 
 	for {
@@ -91,6 +92,8 @@ func StartPolling(conf *config.Secrets) {
 				logger.Err(err).Msg("Error setting processed")
 				continue
 			}
+			processedCount.Inc()
+			unprocessedCount.Dec()
 			logger.Debug().Msg("Order processed")
 		}
 
