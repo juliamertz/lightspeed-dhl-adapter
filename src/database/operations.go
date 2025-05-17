@@ -102,3 +102,19 @@ func GetUnprocessed() ([]Order, error) {
 
 	return orders, nil
 }
+
+func GetProcessedCount() (*int, error) {
+	db, err := sql.Open("sqlite3", dbPath)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	var count int
+	err = db.QueryRow("SELECT COUNT(*) FROM orders WHERE isProcessed = 1;").Scan(&count)
+	if err != nil {
+		panic(err)
+	}
+
+	return &count, nil
+}

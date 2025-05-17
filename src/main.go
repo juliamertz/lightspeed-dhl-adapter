@@ -57,17 +57,10 @@ func main() {
 	cli := kong.Parse(&CLI)
 	conf = config.LoadSecrets(cli.Args[0])
 
-	prometheus.MustRegister(unprocessedOrdersAmount)
-
 	database.Initialize()
-
-	ordersAmount, err := database.GetUnprocessedCount()
-	if err != nil {
-		log.Fatal().Err(err).Msg("Cannot get unprocessed orders from database")
-	}
-	unprocessedOrdersAmount.Add(float64(*ordersAmount))
-
 	go dhl.StartPolling(&conf)
+
+	setupPrometheus()
 
 	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/stock-under-threshold", handleGetStockUnderThreshold)
@@ -75,4 +68,21 @@ func main() {
 
 	log.Info().Int("port", conf.Options.Port).Msg("Starting server")
 	_ = http.ListenAndServe(fmt.Sprintf(":%d", conf.Options.Port), nil)
+}
+
+func setupPrometheus() {
+	prometheus.MustRegister(unprocessedOrdersAmount)
+
+	ordersAmount, err := database.GetUnprocessedCount()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Cannot get unprocessed orders from database")
+	}
+	unprocessedOrdersAmount.Add(float64(*ordersAmount))
+
+	prometheus.MustRegister(processedOrdersAmount)
+	ordersAmount, err = database.GetProcessedCount()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Cannot get processed orders from database")
+	}
+	processedOrdersAmount.Add(float64(*ordersAmount))
 }
