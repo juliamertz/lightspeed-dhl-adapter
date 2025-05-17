@@ -26,7 +26,7 @@ func StartPolling(conf *config.Secrets) {
 			order := orders[i]
 
 			// Create base of logging context
-			baseLogger := log.With().Stack().Int("order_number", *order.LightspeedOrderId).Str("DHL draft id", *order.DhlDraftId)
+			baseLogger := log.With().Stack().Int("order_number", *order.LightspeedOrderId).Str("draft_id", *order.DhlDraftId)
 			logger := baseLogger.Logger()
 
 			logger.Debug().Interface("order", order).Msg("Processing order")

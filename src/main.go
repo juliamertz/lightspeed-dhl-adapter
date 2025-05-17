@@ -57,8 +57,6 @@ func main() {
 	cli := kong.Parse(&CLI)
 	conf = config.LoadSecrets(cli.Args[0])
 
-	fmt.Printf("%v\n",conf)
-
 	database.Initialize()
 	go dhl.StartPolling(&conf)
 
