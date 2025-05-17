@@ -1,10 +1,10 @@
 package config
 
 import (
-	"errors"
 	"os"
 
 	"github.com/pelletier/go-toml/v2"
+	"github.com/rs/zerolog/log"
 )
 
 type Dhl struct {
@@ -36,68 +36,45 @@ type CompanyInfo struct {
 }
 
 type Options struct {
-	DryRun          *bool
-	Port            *int
-	PollingInterval *int
-	Environment     *string
-	Debug           *bool
+	DryRun          bool
+	Port            int
+	PollingInterval int
+	Environment     string
+	Debug           bool
 }
 
 type Secrets struct {
 	Dhl         Dhl
 	Lightspeed  Lightspeed
 	CompanyInfo CompanyInfo
-	Options     *Options
+	Options     Options
 }
 
-func LoadSecrets(path string) (*Secrets, error) {
-	var secrets Secrets
+func LoadSecrets(path string) Secrets {
+	logger := log.With().Str("secrets_path", path).Logger()
+
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err
+		logger.Fatal().Err(err).Msg("Unable to read file")
 	}
+
+	var secrets Secrets
 	err = toml.Unmarshal(data, &secrets)
 	if err != nil {
-		return nil, err
-	}
-
-	if secrets.Options.DryRun == nil {
-		dryRun := false
-		secrets.Options.DryRun = &dryRun
-	}
-
-	if secrets.Options.Port == nil {
-		port := 8080
-		secrets.Options.Port = &port
-	}
-
-	if secrets.Options.Debug == nil {
-		debug := false
-		secrets.Options.Debug = &debug
-	}
-
-	if secrets.Options.Environment == nil {
-		env := "production"
-		secrets.Options.Environment = &env
-	} else if *secrets.Options.Environment != "production" && *secrets.Options.Environment != "development" {
-		panic("Invalid environment specified in config.toml, must be either 'production' or 'development'")
-	}
-
-	if secrets.Options.PollingInterval == nil {
-		interval := 15
-		secrets.Options.PollingInterval = &interval
+		logger.Fatal().Err(err).Msg("Unable to unmarshal config")
 	}
 
 	if secrets.Dhl.UserId == "" || secrets.Dhl.ApiKey == "" || secrets.Dhl.AccountId == "" {
-		return nil, errors.New("DHL secrets are incomplete")
+		logger.Fatal().Msg("DHL secrets are incomplete")
 	}
 
 	if secrets.Lightspeed.Key == "" || secrets.Lightspeed.Secret == "" || secrets.Lightspeed.Cluster == "" || secrets.Lightspeed.Frontend == "" || secrets.Lightspeed.ClusterId == "" || secrets.Lightspeed.ShopId == "" {
-		return nil, errors.New("Lightspeed secrets are incomplete")
+		logger.Fatal().Msg("Lightspeed secrets are incomplete")
 	}
 
 	if secrets.CompanyInfo.Name == "" || secrets.CompanyInfo.Street == "" || secrets.CompanyInfo.City == "" || secrets.CompanyInfo.PostalCode == "" || secrets.CompanyInfo.CountryCode == "" || secrets.CompanyInfo.Number == "" || secrets.CompanyInfo.Addition == "" || secrets.CompanyInfo.Email == "" || secrets.CompanyInfo.PhoneNumber == "" {
-		return nil, errors.New("Company info is incomplete")
+		logger.Fatal().Msg("Company info is incomplete")
 	}
-	return &secrets, nil
+
+	return secrets
 }

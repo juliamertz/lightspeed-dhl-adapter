@@ -2,7 +2,9 @@ package database
 
 import (
 	"database/sql"
+
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -24,7 +26,7 @@ type Order struct {
 func Initialize() {
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
-		panic(err)
+		log.Fatal().Err(err).Str("db_path", dbPath).Msg("Unable to open database")
 	}
 	defer db.Close()
 
@@ -46,6 +48,6 @@ func Initialize() {
   `)
 
 	if err != nil {
-		panic(err)
+		log.Fatal().Err(err).Msg("Unable to create tables")
 	}
 }
