@@ -24,7 +24,7 @@ func setupLogging() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 
-	if conf.Options.Debug {
+	if os.Getenv("GO_LOG") == "debug" {
 		zerolog.SetGlobalLevel(zerolog.TraceLevel)
 	} else {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
@@ -56,6 +56,8 @@ func main() {
 
 	cli := kong.Parse(&CLI)
 	conf = config.LoadSecrets(cli.Args[0])
+
+	fmt.Printf("%v\n",conf)
 
 	database.Initialize()
 	go dhl.StartPolling(&conf)

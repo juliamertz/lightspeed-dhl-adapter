@@ -39,8 +39,6 @@ type Options struct {
 	DryRun          bool
 	Port            int
 	PollingInterval int
-	Environment     string
-	Debug           bool
 }
 
 type Secrets struct {
