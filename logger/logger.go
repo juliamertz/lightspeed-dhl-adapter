@@ -19,13 +19,7 @@ func SetupLogger(conf *config.Secrets) {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 
-	if *conf.Options.Environment == "production" {
-		file, err := os.OpenFile("log.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-		if err != nil {
-			panic(err)
-		}
-		log.Logger = zerolog.New(file).With().Timestamp().Logger()
-	} else {
+	if *conf.Options.Environment == "development" {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 }
