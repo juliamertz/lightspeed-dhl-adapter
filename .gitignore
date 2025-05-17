@@ -5,3 +5,4 @@ result
 # secrets
 config.toml
 database.db
+src/vendor

@@ -52,6 +52,22 @@ func SetProcessed(dhlDraftId string) error {
 	return err
 }
 
+func GetUnprocessedCount() (*int, error) {
+	db, err := sql.Open("sqlite3", dbPath)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	var count int
+	err = db.QueryRow("SELECT COUNT(*) FROM orders WHERE isProcessed = 0;").Scan(&count)
+	if err != nil {
+		panic(err)
+	}
+
+	return &count, nil
+}
+
 func GetUnprocessed() ([]Order, error) {
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {

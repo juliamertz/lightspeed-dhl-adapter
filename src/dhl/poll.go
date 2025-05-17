@@ -21,6 +21,7 @@ func StartPolling(conf *config.Secrets) {
 		}
 
 		log.Info().Int("entries_in_database", len(orders)).Msg("Polling for labels")
+
 		for i := range orders {
 			order := orders[i]
 

@@ -6,8 +6,11 @@ import (
 	"lightspeed-dhl/database"
 	"lightspeed-dhl/dhl"
 	"net/http"
+	"os"
 
 	"github.com/alecthomas/kong"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
@@ -27,11 +30,24 @@ func setupLogging() {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 
-	// TODO: read from environment variable
-	// if conf.Options.Environment == "development" {
-	// 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	// }
+	if os.Getenv("ENVIRONMENT") == "development" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
 }
+
+var unprocessedOrdersAmount = prometheus.NewCounter(
+	prometheus.CounterOpts{
+		Name: "nettenshop_unprocessed_orders_amount",
+		Help: "Total amount of unprocessed orders in database",
+	},
+)
+
+var processedOrdersAmount = prometheus.NewCounter(
+	prometheus.CounterOpts{
+		Name: "nettenshop_processed_orders_amount",
+		Help: "Total amount of processed orders in database",
+	},
+)
 
 var conf config.Secrets
 
@@ -41,9 +57,19 @@ func main() {
 	cli := kong.Parse(&CLI)
 	conf = config.LoadSecrets(cli.Args[0])
 
+	prometheus.MustRegister(unprocessedOrdersAmount)
+
 	database.Initialize()
+
+	ordersAmount, err := database.GetUnprocessedCount()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Cannot get unprocessed orders from database")
+	}
+	unprocessedOrdersAmount.Add(float64(*ordersAmount))
+
 	go dhl.StartPolling(&conf)
 
+	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/stock-under-threshold", handleGetStockUnderThreshold)
 	http.HandleFunc("/webhook", handleLightspeedWebhook)
 
