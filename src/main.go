@@ -8,7 +8,6 @@ import (
 	"lightspeed-dhl/database"
 	"lightspeed-dhl/dhl"
 	"lightspeed-dhl/lightspeed"
-	"lightspeed-dhl/logger"
 	"net/http"
 	"os"
 
@@ -33,7 +32,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	logger.SetupLogger(conf)
+	SetupLogger(conf)
 	database.Initialize()
 
 	dhl.StartPolling(conf)

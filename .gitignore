@@ -1,9 +1,7 @@
+# nix artifacts
+.direnv
+result
+
+# secrets
 config.toml
 database.db
-req.sh
-log.txt
-lightspeed-dhl
-.direnv
-.direnv/bin
-result
-.env
