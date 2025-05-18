@@ -37,6 +37,7 @@ func SetShipmentId(dhlDraftId string, dhlShipmentId string) error {
 	if err != nil {
 		return err
 	}
+	defer db.Close()
 
 	_, err = db.Exec(`UPDATE orders SET dhlShipmentId = ? WHERE dhlDraftId = ?;`, dhlShipmentId, dhlDraftId)
 	return err
@@ -47,6 +48,7 @@ func SetProcessed(dhlDraftId string) error {
 	if err != nil {
 		return err
 	}
+	defer db.Close()
 
 	_, err = db.Exec(`UPDATE orders SET isProcessed = 1 WHERE dhlDraftId = ?;`, dhlDraftId)
 	return err
