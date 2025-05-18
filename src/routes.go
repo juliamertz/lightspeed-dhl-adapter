@@ -22,7 +22,7 @@ func validateRequest(r *http.Request, secrets *config.Secrets) bool {
 }
 
 func handleGetStockUnderThreshold(w http.ResponseWriter, r *http.Request) {
-	logger := log.With().Stack().Interface("request", r).Logger()
+	logger := log.With().Stack().Interface("method", r.Method).Logger()
 	logger.Debug().Msg("Getting stock under threshold")
 
 	if r.Method == "GET" {
@@ -48,7 +48,7 @@ func handleGetStockUnderThreshold(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleLightspeedWebhook(w http.ResponseWriter, r *http.Request) {
-	logger := log.With().Stack().Interface("request", r).Logger()
+	logger := log.With().Stack().Interface("method", r.Method).Logger()
 	logger.Debug().Msg("Handling Lightspeed webhook")
 
 	if r.Method == "POST" {
