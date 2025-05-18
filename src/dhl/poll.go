@@ -93,17 +93,29 @@ func poll(conf *config.Secrets, processedCount prometheus.Gauge, unprocessedCoun
 		logger.Debug().Msg("Order processed")
 	}
 
+	log.Info().Msg("Done polling for labels")
+
 	return nil
 }
 
-func StartPolling(conf *config.Secrets, processedCount prometheus.Gauge, unprocessedCount prometheus.Gauge) {
+func StartPolling(
+	conf *config.Secrets,
+	pollingDuration prometheus.Histogram,
+	processedCount prometheus.Gauge,
+	unprocessedCount prometheus.Gauge,
+) {
 	sleepDuration := time.Duration(conf.Options.PollingInterval) * time.Minute
 
 	for {
+		start := time.Now()
+
 		err := poll(conf, processedCount, unprocessedCount)
 		if err != nil {
 			log.Err(err).Msg("polling failed")
 		}
+
+		duration := time.Since(start).Seconds()
+		pollingDuration.Observe(duration)
 
 		time.Sleep(sleepDuration)
 	}

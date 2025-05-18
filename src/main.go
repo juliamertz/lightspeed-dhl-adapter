@@ -20,18 +20,26 @@ var CLI struct {
 	Config string `arg:"" name:"path" help:"Path to configuration file" type:"path"`
 }
 
-var unprocessedOrdersAmount = prometheus.NewGauge(
-	prometheus.GaugeOpts{
-		Name: "nettenshop_unprocessed_orders_amount",
-		Help: "Total amount of unprocessed orders in database",
-	},
-)
-
-var processedOrdersAmount = prometheus.NewGauge(
-	prometheus.GaugeOpts{
-		Name: "nettenshop_processed_orders_amount",
-		Help: "Total amount of processed orders in database",
-	},
+var (
+	unprocessedOrdersAmount = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "nettenshop_unprocessed_orders_amount",
+			Help: "Total amount of unprocessed orders in database",
+		},
+	)
+	processedOrdersAmount = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "nettenshop_processed_orders_amount",
+			Help: "Total amount of processed orders in database",
+		},
+	)
+	pollingDuration = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Name:    "nettenshop_polling_duration",
+			Help:    "Histogram of duration polling DHL for labels took.",
+			Buckets: prometheus.DefBuckets,
+		},
+	)
 )
 
 var conf config.Secrets
@@ -43,7 +51,7 @@ func main() {
 	conf = config.LoadSecrets(cli.Args[0])
 
 	database.Initialize()
-	go dhl.StartPolling(&conf, processedOrdersAmount, unprocessedOrdersAmount)
+	go dhl.StartPolling(&conf, pollingDuration, processedOrdersAmount, unprocessedOrdersAmount)
 
 	setupPrometheus()
 	serve()
@@ -66,6 +74,8 @@ func setupLogging() {
 
 func setupPrometheus() {
 	prometheus.MustRegister(unprocessedOrdersAmount)
+	prometheus.MustRegister(processedOrdersAmount)
+	prometheus.MustRegister(pollingDuration)
 
 	ordersAmount, err := database.GetUnprocessedCount()
 	if err != nil {
@@ -73,12 +83,12 @@ func setupPrometheus() {
 	}
 	unprocessedOrdersAmount.Add(float64(*ordersAmount))
 
-	prometheus.MustRegister(processedOrdersAmount)
 	ordersAmount, err = database.GetProcessedCount()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot get processed orders from database")
 	}
 	processedOrdersAmount.Add(float64(*ordersAmount))
+
 }
 
 func serve() {
