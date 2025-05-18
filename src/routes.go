@@ -76,13 +76,20 @@ func handleLightspeedWebhook(w http.ResponseWriter, r *http.Request) {
 
 		draft := dhl.WebhookToDraft(orderData, &conf)
 
-		logger = logger.With().Str("order_reference", orderData.Order.Number).Interface("order_data", orderData).Interface("draft", draft).Logger()
+		logger = logger.With().
+			Str("order_reference", orderData.Order.Number).
+			Interface("draft", draft).
+			Logger()
+
 		logger.Debug().Msg("Transformed order data to draft")
 
 		if !conf.Options.DryRun {
 			err, _ = dhl.CreateDraft(&draft, &conf)
 			if err != nil {
-				logger.Err(err).Stack().Msg("Failed to create draft in DHL")
+				logger.Err(err).
+					Interface("order_data", orderData).
+					Stack().Msg("Failed to create draft in DHL")
+
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
@@ -93,7 +100,11 @@ func handleLightspeedWebhook(w http.ResponseWriter, r *http.Request) {
 		unprocessedOrdersAmount.Inc()
 		err = database.CreateDraft(draft.Id, draft.OrderReference, orderData.Order.Number)
 		if err != nil {
-			logger.Err(err).Stack().Msg("Failed to create draft in database")
+			logger.
+				Err(err).
+				Interface("order_data", orderData).
+				Stack().Msg("Failed to create draft in database")
+
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

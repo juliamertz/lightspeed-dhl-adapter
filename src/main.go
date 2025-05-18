@@ -20,21 +20,6 @@ var CLI struct {
 	Config string `arg:"" name:"path" help:"Path to configuration file" type:"path"`
 }
 
-func setupLogging() {
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
-
-	if os.Getenv("GO_LOG") == "debug" {
-		zerolog.SetGlobalLevel(zerolog.TraceLevel)
-	} else {
-		zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	}
-
-	if os.Getenv("ENVIRONMENT") == "development" {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	}
-}
-
 var unprocessedOrdersAmount = prometheus.NewGauge(
 	prometheus.GaugeOpts{
 		Name: "nettenshop_unprocessed_orders_amount",
@@ -61,13 +46,22 @@ func main() {
 	go dhl.StartPolling(&conf, processedOrdersAmount, unprocessedOrdersAmount)
 
 	setupPrometheus()
+	serve()
+}
 
-	http.Handle("/metrics", promhttp.Handler())
-	http.HandleFunc("/stock-under-threshold", handleGetStockUnderThreshold)
-	http.HandleFunc("/webhook", handleLightspeedWebhook)
+func setupLogging() {
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 
-	log.Info().Int("port", conf.Options.Port).Msg("Starting server")
-	_ = http.ListenAndServe(fmt.Sprintf(":%d", conf.Options.Port), nil)
+	if os.Getenv("GO_LOG") == "debug" {
+		zerolog.SetGlobalLevel(zerolog.TraceLevel)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	}
+
+	if os.Getenv("ENVIRONMENT") == "development" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
 }
 
 func setupPrometheus() {
@@ -85,4 +79,13 @@ func setupPrometheus() {
 		log.Fatal().Err(err).Msg("Cannot get processed orders from database")
 	}
 	processedOrdersAmount.Add(float64(*ordersAmount))
+}
+
+func serve() {
+	http.Handle("/metrics", promhttp.Handler())
+	http.HandleFunc("/stock-under-threshold", handleGetStockUnderThreshold)
+	http.HandleFunc("/webhook", handleLightspeedWebhook)
+
+	log.Info().Int("port", conf.Options.Port).Msg("Starting server")
+	_ = http.ListenAndServe(fmt.Sprintf(":%d", conf.Options.Port), nil)
 }

@@ -100,7 +100,11 @@ func StartPolling(conf *config.Secrets, processedCount prometheus.Gauge, unproce
 	sleepDuration := time.Duration(conf.Options.PollingInterval) * time.Minute
 
 	for {
-		go poll(conf, processedCount, unprocessedCount)
+		err := poll(conf, processedCount, unprocessedCount)
+		if err != nil {
+			log.Err(err).Msg("polling failed")
+		}
+
 		time.Sleep(sleepDuration)
 	}
 }
