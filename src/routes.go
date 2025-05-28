@@ -97,7 +97,6 @@ func handleLightspeedWebhook(w http.ResponseWriter, r *http.Request) {
 			logger.Info().Msg("Draft created in DHL")
 		}
 
-		unprocessedOrdersAmount.Inc()
 		err = database.CreateDraft(draft.Id, draft.OrderReference, orderData.Order.Number)
 		if err != nil {
 			logger.
@@ -108,6 +107,7 @@ func handleLightspeedWebhook(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		unprocessedOrdersAmount.Inc()
 
 		logger.Info().Msg("Draft created in database")
 
