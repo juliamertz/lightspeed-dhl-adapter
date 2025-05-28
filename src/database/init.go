@@ -43,8 +43,8 @@ func Initialize() {
       updatedAt TEXT
     );
 
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_lightspeedOrderId ON orders (lightspeedOrderId);
     CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_dhlDraftId ON orders (dhlDraftId);
+		CREATE INDEX IF NOT EXISTS idx_lightspeedOrderId ON orders (lightspeedOrderId);
   `)
 
 	if err != nil {
