@@ -29,7 +29,7 @@ func poll(conf *config.Secrets, processedCount prometheus.Gauge, unprocessedCoun
 		logger.Debug().Interface("order", order).Msg("Processing order")
 
 		// Check with DHL api if a label has been created for this order
-		label, err := GetLabelByReference(*order.LightspeedOrderId, conf)
+		label, err := GetLabelByReference(*order.LightspeedOrderId, conf, 0)
 		if err != nil {
 			logger.Err(err).Msg("Error getting label by reference")
 			continue

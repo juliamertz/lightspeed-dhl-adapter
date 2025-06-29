@@ -6,6 +6,7 @@ import (
 	"io"
 	"lightspeed-dhl/config"
 	"net/http"
+	"time"
 
 	"github.com/rs/zerolog/log"
 )
@@ -67,7 +68,9 @@ func GetDrafts(conf *config.Secrets) ([]Draft, error) {
 	return result, nil
 }
 
-func GetLabelByReference(reference int, conf *config.Secrets) (*Label, error) {
+const MAX_RETRIES = 5;
+
+func GetLabelByReference(reference int, conf *config.Secrets, retryCount int) (*Label, error) {
 	url := fmt.Sprintf("labels?orderReferenceFilter=%v", reference)
 	auth, err := authenticate(conf)
 	if err != nil {
@@ -77,6 +80,17 @@ func GetLabelByReference(reference int, conf *config.Secrets) (*Label, error) {
 	if err != nil {
 		log.Err(err).Stack().Msg("Error getting label by reference")
 		return nil, err
+	}
+
+	if res.StatusCode == 502 {
+		time.Sleep(time.Duration(1))
+		if retryCount > MAX_RETRIES {
+			log.Info().Int("reference", reference).Msg("max retry count reached, aborting")
+			return nil, nil
+		} else {
+			log.Info().Int("reference", reference).Int("retry_count", retryCount).Msg("retrying get label by reference")
+			return GetLabelByReference(reference, conf, retryCount + 1)
+		}
 	}
 
 	if res.StatusCode == 404 {
