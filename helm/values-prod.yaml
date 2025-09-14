@@ -1,0 +1,27 @@
+env: prod
+
+dryRun: false
+
+gateway:
+  name: shared
+  namespace: default
+
+configSecret:
+  name: config
+  key: config.toml
+
+webhook:
+  minReplicas: 2
+  maxReplicas: 5
+  hostnames:
+    - lightspeed-adapter.juliamertz.dev
+    - nettenshop.juliamertz.dev
+    - nettenshop.juliamertz.nl
+
+pollStatus:
+  schedule: "0 * * * *" # every hour
+  jobHistoryLimit: 3
+
+clusterDB:
+  replicas: 1
+  storageSize: 10Gi

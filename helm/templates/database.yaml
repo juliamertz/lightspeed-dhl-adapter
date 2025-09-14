@@ -1,0 +1,32 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: adapter-db
+  annotations:
+    cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+spec:
+  instances: {{ $.Values.clusterDB.replicas }}
+  primaryUpdateStrategy: unsupervised
+  enableSuperuserAccess: false
+  storage:
+    size: {{ default "5Gi" $.Values.clusterDB.storageSize }}
+    {{ if $.Values.clusterDB.storageClass }}
+    storageClass: {{ $.Values.clusterDB.storageClass }}
+    {{ end }}
+  {{ if ne $.Values.env "local"}}
+  replicationSlots:
+    highAvailability:
+      enabled: true
+  {{ end }}
+  postgresql:
+    parameters:
+      max_connections: "200"
+      max_slot_wal_keep_size: "1GB"
+      work_mem: {{ default "128MB" $.Values.clusterDB.workMem }}
+      shared_buffers: {{ default "128MB" $.Values.clusterDB.sharedBuffers }}
+      max_standby_archive_delay: {{ default "30s" $.Values.clusterDB.archiveDelay }}
+      max_standby_streaming_delay: {{ default "30s" $.Values.clusterDB.streamingDelay }}
+      {{ if ne $.Values.env "local" }}
+      pg_stat_statements.max: "10000"
+      pg_stat_statements.track: all
+      {{ end }}

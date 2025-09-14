@@ -1,0 +1,25 @@
+env: local
+
+dryRun: true
+
+gateway:
+  name: shared
+  namespace: default
+
+configSecret:
+  name: config
+  key: config.toml
+
+webhook:
+  minReplicas: 1
+  maxReplicas: 3
+  hostnames:
+    - adapter.cluster.localhost
+
+pollStatus:
+  schedule: "*/5 * * * *" # every 5 minutes
+  jobHistoryLimit: 3
+
+clusterDB:
+  replicas: 1
+  storageSize: 1Gi

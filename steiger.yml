@@ -1,0 +1,21 @@
+build:
+  services:
+    type: nix
+    platformStrategy: crossSystem
+    packages:
+      lightspeed-dhl-adapter: adapter
+
+profiles:
+  local:
+    env: local
+  prod:
+    env: prod
+
+deploy:
+  lightspeed-dhl-adapter:
+    type: helm
+    path: helm
+    namespace: lightspeed-dhl-adapter
+    valuesFiles:
+      - helm/values.yaml
+      - helm/values-${env}.yaml

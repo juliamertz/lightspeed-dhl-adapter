@@ -1,0 +1,2 @@
+ALTER TABLE orders
+ALTER COLUMN dhl_draft_id SET NOT NULL;

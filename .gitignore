@@ -1,0 +1,11 @@
+.env
+*.db*
+config.toml
+
+/target
+/result
+/.direnv
+.DS_Store
+
+dump.sql
+orders.json

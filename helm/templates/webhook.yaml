@@ -1,0 +1,185 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webhook
+  labels:
+    app.kubernetes.io/name: webhook
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: webhook
+  replicas: {{ default 1 .Values.webhook.minReplicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  revisionHistoryLimit: 0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: webhook
+        app.kubernetes.io/part-of: {{ .Release.Name }}
+    spec:
+      terminationGracePeriodSeconds: 15
+      imagePullSecrets:
+      - name: github-registry
+      initContainers:
+      - name: migrate
+        image: {{ .Values.steiger.lightspeedDhlAdapter.image }}
+        command: ["/bin/diesel", "migration", "run", "--migration-dir", "/data/migrations"]
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: adapter-db-app
+              key: uri
+      containers:
+        - name: webhook
+          image: {{ .Values.steiger.lightspeedDhlAdapter.image }}
+          args: ["/bin/lightspeed-dhl-adapter", "serve"]
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: DRY_RUN
+              value: {{ .Values.dryRun | quote }}
+            - name: CONFIG_PATH
+              value: /data/config.toml
+            - name: ENVIRONMENT
+              value: development
+            - name: RUST_LOG
+              value: info,lightspeed_dhl_adapter=debug
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: adapter-db-app
+                  key: uri
+          volumeMounts:
+            - name: config-volume
+              mountPath: /data
+              readOnly: true
+          resources:
+            requests:
+              cpu: 75m
+              memory: 75Mi
+            limits:
+              cpu: 100m
+              memory: 100Mi
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 1
+            periodSeconds: 3
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 3
+      volumes:
+        - name: config-volume
+          secret:
+            secretName: {{ .Values.configSecret.name }}
+            items:
+            - key: {{ .Values.configSecret.key }}
+              path: config.toml
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: webhook
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: webhook
+  labels:
+    app.kubernetes.io/name: webhook
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: webhook
+  minReplicas: {{ default 1 .Values.webhook.minReplicas }}
+  maxReplicas: {{ default 1 .Values.webhook.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          averageUtilization: 50
+          type: Utilization
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhook
+  labels:
+    app.kubernetes.io/name: webhook
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+spec:
+  selector:
+    app.kubernetes.io/name: webhook
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: webhook
+  labels:
+    app.kubernetes.io/name: webhook
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+spec:
+  parentRefs:
+    - {{ .Values.gateway | toYaml | nindent 6 }}
+  hostnames:
+  {{- range .Values.webhook.hostnames }}
+    - {{ . | quote }}
+  {{- end }}
+  rules:
+    - matches:
+      backendRefs:
+        - name: webhook
+          port: 8000
+
+---
+apiVersion: cert-vandal.io/v1
+kind: SANInjection
+metadata:
+  name: webhook-route
+  labels:
+    app.kubernetes.io/name: webhook
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+spec:
+  targetCertificate:
+    name: gateway-tls
+    namespace: default
+  hostnames:
+  {{- range .Values.webhook.hostnames }}
+    - {{ . | quote }}
+  {{- end }}

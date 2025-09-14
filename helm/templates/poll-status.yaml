@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: poll-status
+spec:
+  schedule: {{ default "*/30 * * * *" .Values.pollStatus.schedule | quote }}
+  successfulJobsHistoryLimit: {{ default 3 .Values.pollStatus.jobHistoryLimit }}
+  failedJobsHistoryLimit: {{ default 3 .Values.pollStatus.jobHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: poll-status
+            app.kubernetes.io/part-of: lightspeed-dhl-adapter
+        spec:
+          restartPolicy: OnFailure
+          imagePullSecrets:
+          - name: github-registry
+          containers:
+          - name: poll-status
+            imagePullPolicy: IfNotPresent
+            image: {{ .Values.steiger.lightspeedDhlAdapter.image }}
+            command: ["/bin/lightspeed-dhl-adapter", "poll-status"]
+            volumeMounts:
+            - name: config-volume
+              mountPath: /data
+              readOnly: true
+            env:
+            - name: DRY_RUN
+              value: {{ .Values.dryRun | quote }}
+            - name: CONFIG_PATH
+              value: /data/config.toml
+            - name: ENVIRONMENT
+              value: development
+            - name: RUST_LOG
+              value: info,lightspeed_dhl_adapter=debug
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: adapter-db-app
+                  key: uri
+          volumes:
+          - name: config-volume
+            secret:
+              secretName: {{ .Values.configSecret.name }}
+              items:
+              - key: {{ .Values.configSecret.key }}
+                path: config.toml
