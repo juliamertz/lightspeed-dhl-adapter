@@ -28,13 +28,6 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
     {
         info!({ shipment_id = label.shipment_id }, "found label for order");
 
-        let shipment_id = label
-            .shipment_id
-            .as_ref()
-            .context("label has no shipment id set")?
-            .to_uuid()?;
-        database::set_shipment_id(&state.pool, &draft_id, &shipment_id).await?;
-
         let data = state
             .lightspeed
             .get_order(&order.lightspeed_order_id.to_string())
@@ -50,6 +43,17 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
             return Ok(OrderStatus::Cancelled);
         }
 
+        database::set_shipment_id(
+            &state.pool,
+            &draft_id,
+            label
+                .shipment_id
+                .as_ref()
+                .map(ToUuid::to_uuid)
+                .transpose()?,
+        )
+        .await?;
+
         state
             .lightspeed
             .update_order_status(
@@ -61,7 +65,7 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
             .context("unable to update lightspeed order status")?;
 
         database::set_processed(&state.pool, &draft_id).await?;
-        return Ok(OrderStatus::CompletedShipped)
+        return Ok(OrderStatus::CompletedShipped);
     }
 
     Ok(OrderStatus::ProcessingAwaitingPayment)
@@ -75,7 +79,6 @@ pub async fn run_once(state: AdapterState) -> Result<()> {
     }
 
     info!("polling {amount} unprocessed orders");
-
 
     let mut orders = database::get_unprocessed_stream(&state.pool).await?;
 

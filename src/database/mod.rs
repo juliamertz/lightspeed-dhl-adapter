@@ -104,7 +104,7 @@ pub async fn set_cancelled(pool: &Pool<Connection>, draft_id: &Uuid) -> Result<(
 pub async fn set_shipment_id(
     pool: &Pool<Connection>,
     draft_id: &Uuid,
-    shipment_id: &Uuid,
+    shipment_id: Option<Uuid>,
 ) -> Result<()> {
     let mut conn = pool.get().await?;
     diesel::update(orders::table)
