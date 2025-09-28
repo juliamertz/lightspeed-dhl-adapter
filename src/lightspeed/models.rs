@@ -19,6 +19,12 @@ pub enum OrderStatus {
     Cancelled,
 }
 
+impl OrderStatus {
+    pub fn is_cancelled(&self) -> bool {
+        self == &Self::Cancelled
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum ShipmentStatus {

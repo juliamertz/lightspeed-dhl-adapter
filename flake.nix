@@ -8,7 +8,6 @@
     };
     filter.url = "github:numtide/nix-filter";
     steiger.url = "github:brainhivenl/steiger/feat/nix-force-host-platform";
-    # steiger.url = "path:/Users/julia/projects/2025/steiger";
   };
 
   outputs = {

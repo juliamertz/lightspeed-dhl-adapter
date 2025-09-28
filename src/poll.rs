@@ -21,8 +21,6 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
         "checking order's shipment status"
     );
 
-    // if a label has been created for this order 
-    // we can go ahead and update the status in lightspeed
     if let Some(label) = state
         .dhl
         .get_label(&order.lightspeed_order_id.to_string())
@@ -35,7 +33,6 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
             .as_ref()
             .context("label has no shipment id set")?
             .to_uuid()?;
-
         database::set_shipment_id(&state.pool, &draft_id, &shipment_id).await?;
 
         let data = state
@@ -44,7 +41,7 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
             .await
             .context("unable to get lightspeed order for draft")?;
 
-        if let OrderStatus::Cancelled = data.order.status {
+        if data.order.status.is_cancelled() {
             info!(
                 { lightspeed_id = data.order.id },
                 "order has been cancelled"
@@ -71,15 +68,14 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
 }
 
 pub async fn run_once(state: AdapterState) -> Result<()> {
-    debug!("polling unprocessed orders");
-
-    let unprocessed_count = database::unprocessed_count(&state.pool).await?;
-    info!("found {unprocessed_count} unprocessed orders");
-
-    if unprocessed_count == 0 {
+    let amount = database::unprocessed_count(&state.pool).await?;
+    if amount == 0 {
         info!("nothing to do.");
         return Ok(());
     }
+
+    info!("polling {amount} unprocessed orders");
+
 
     let mut orders = database::get_unprocessed_stream(&state.pool).await?;
 
