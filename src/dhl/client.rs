@@ -66,7 +66,7 @@ impl DHLClient {
 
     pub async fn authenticate(&self) -> Result<ApiToken> {
         if let Some(token) = self.token.read().await.as_ref()
-            && token.access_token_expiration > Local::now().timestamp()
+            && token.access_token_expiration - 15 > Local::now().timestamp()
         {
             return Ok(token.clone());
         }
