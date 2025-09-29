@@ -98,16 +98,15 @@ impl LightspeedClient {
             }
         });
 
-        Ok(self
-            .http
+        self.http
             .put(self.endpoint(format!("orders/{id}.json")))
             .json(&body)
             .headers(self.headers()?)
             .send()
             .await?
-            .error_for_status()?
-            .json()
-            .await?)
+            .error_for_status()?;
+
+        Ok(())
     }
 
     pub async fn get_stock_under_threshold(&self) -> Result<Vec<Product>> {
