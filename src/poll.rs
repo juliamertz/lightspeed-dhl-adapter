@@ -16,11 +16,6 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
 
     database::incr_poll_count(&state.pool, order.lightspeed_order_id).await?;
 
-    debug!(
-        { dhl_id = ?&order.dhl_draft_id, lightspeed_id = &order.lightspeed_order_id },
-        "checking order's shipment status"
-    );
-
     if let Some(label) = state
         .dhl
         .get_label(&order.lightspeed_order_id.to_string())
@@ -86,7 +81,7 @@ pub async fn run_once(state: AdapterState) -> Result<()> {
         match query {
             Ok(order) => match reconcile_order_status(&state, &order).await {
                 Ok(status) => info!(
-                    { order_id = &order.lightspeed_order_id, status = ?&status },
+                    { lightspeed_id = &order.lightspeed_order_id, dhl_id = ?&order.dhl_draft_id, status = ?&status },
                     "done checking order status"
                 ),
                 Err(err) => error!(

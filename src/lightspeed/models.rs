@@ -15,6 +15,7 @@ pub struct Options {
 #[serde(rename_all = "snake_case")]
 pub enum OrderStatus {
     ProcessingAwaitingPayment,
+    ProcessingAwaitingShipment,
     CompletedShipped,
     Cancelled,
 }
@@ -30,6 +31,7 @@ impl OrderStatus {
 pub enum ShipmentStatus {
     Shipped,
     NotShipped,
+    Cancelled,
 }
 
 #[allow(unused)]
