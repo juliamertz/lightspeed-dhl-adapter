@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use futures::StreamExt;
-use tracing::{debug, error, info};
+use tracing::{error, info};
 
 use crate::{
     AdapterState,
@@ -10,22 +10,19 @@ use crate::{
 };
 
 async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<OrderStatus> {
+    let order_id = &order.lightspeed_order_id.to_string();
     let draft_id = order
         .dhl_draft_id
         .context("order has been created without a draft id")?;
 
     database::incr_poll_count(&state.pool, order.lightspeed_order_id).await?;
 
-    if let Some(label) = state
-        .dhl
-        .get_label(&order.lightspeed_order_id.to_string())
-        .await?
-    {
+    if let Some(label) = state.dhl.get_label(order_id).await? {
         info!({ shipment_id = label.shipment_id }, "found label for order");
 
         let data = state
             .lightspeed
-            .get_order(&order.lightspeed_order_id.to_string())
+            .get_order(order_id)
             .await
             .context("unable to get lightspeed order for draft")?;
 
@@ -52,7 +49,7 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
         state
             .lightspeed
             .update_order_status(
-                &order.lightspeed_order_id.to_string(),
+                order_id,
                 OrderStatus::CompletedShipped,
                 ShipmentStatus::Shipped,
             )
@@ -60,6 +57,7 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
             .context("unable to update lightspeed order status")?;
 
         database::set_processed(&state.pool, &draft_id).await?;
+
         return Ok(OrderStatus::CompletedShipped);
     }
 

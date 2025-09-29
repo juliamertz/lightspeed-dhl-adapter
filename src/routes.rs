@@ -7,24 +7,26 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
-use serde_json::json;
+use axum_metrics::MetricLayer;
+use metrics_exporter_prometheus::PrometheusHandle;
 use tokio::net::TcpListener;
 use tower_http::trace::TraceLayer;
 use tracing::instrument;
 use uuid::Uuid;
 
-use crate::AdapterError;
 use crate::database::{self, ConnectionPool};
 use crate::dhl::client::DHLClient;
 use crate::lightspeed::{IncomingOrder, LightspeedClient};
-use crate::{AdapterState, config::Config, dhl::Draft};
+use crate::{AdapterError, AdapterState, config::Config, dhl::Draft};
 
 pub async fn serve(addr: SocketAddr, state: AdapterState) {
     let listener = TcpListener::bind(&addr).await.unwrap();
     let app = Router::new()
         .route("/ready", get(ready))
+        .route("/metrics", get(metrics))
         .route("/webhook", post(webhook))
         .route("/stock-under-threshold", get(stock_under_threshold))
+        .layer(MetricLayer::default())
         .layer(TraceLayer::new_for_http())
         .with_state(state);
 
@@ -32,9 +34,20 @@ pub async fn serve(addr: SocketAddr, state: AdapterState) {
     axum::serve(listener, app).await.unwrap();
 }
 
-pub async fn ready() -> Response {
-    let body = json!({ "ready": true });
-    Json(body).into_response()
+pub async fn ready() -> &'static str {
+    "OK"
+}
+
+pub async fn metrics(
+    State(metrics): State<PrometheusHandle>,
+    State(pool): State<ConnectionPool>,
+) -> Result<String, AdapterError> {
+    metrics::gauge!("nettenshop_unprocessed_orders_amount")
+        .set(database::unprocessed_count(&pool).await? as f64);
+    metrics::gauge!("nettenshop_processed_orders_amount")
+        .set(database::processed_count(&pool).await? as f64);
+
+    Ok(metrics.render())
 }
 
 #[instrument(err(Debug))]

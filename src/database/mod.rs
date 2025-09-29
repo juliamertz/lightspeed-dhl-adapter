@@ -142,6 +142,15 @@ pub async fn unprocessed_count(pool: &Pool<Connection>) -> Result<i64> {
         .await?)
 }
 
+pub async fn processed_count(pool: &Pool<Connection>) -> Result<i64> {
+    let mut conn = pool.get().await?;
+    Ok(orders::table
+        .count()
+        .filter(orders::processed_at.is_not_null())
+        .get_result(&mut conn)
+        .await?)
+}
+
 pub async fn get_unprocessed_stream(
     pool: &Pool<Connection>,
 ) -> Result<impl Stream<Item = QueryResult<Order>>> {

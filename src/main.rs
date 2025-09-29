@@ -18,6 +18,7 @@ use database::ConnectionPool;
 use dhl::client::DHLClient;
 use diesel_async::pooled_connection::bb8;
 use lightspeed::client::LightspeedClient;
+use metrics_exporter_prometheus::{PrometheusBuilder, PrometheusHandle};
 use reqwest::StatusCode;
 use thiserror::Error;
 use tracing::error;
@@ -70,6 +71,8 @@ enum AdapterError {
     Uuid(#[from] uuid::Error),
     #[error("json error: '{0}'")]
     Json(#[from] serde_json::Error),
+    #[error("failed to build prometheus exporter: '{0}'")]
+    PrometheusBuilder(#[from] metrics_exporter_prometheus::BuildError),
     #[error("cannot stringify header: '{0}'")]
     ToStr(#[from] reqwest::header::ToStrError),
     #[error("{0}")]
@@ -93,6 +96,7 @@ pub struct AdapterState {
     pub options: Arc<Opts>,
     pub dhl: Arc<crate::dhl::client::DHLClient>,
     pub lightspeed: Arc<crate::lightspeed::client::LightspeedClient>,
+    pub metrics_handle: PrometheusHandle,
 }
 
 #[tokio::main]
@@ -105,8 +109,7 @@ async fn main() -> Result<(), AdapterError> {
 
     let pool = database::establish_connection(&opts.database_url).await?;
     let config = config::load(
-        &opts
-            .config_path
+        opts.config_path
             .clone()
             .unwrap_or_else(|| PathBuf::from("config.toml")),
     );
@@ -124,12 +127,13 @@ async fn main() -> Result<(), AdapterError> {
         config: config.to_owned().into(),
         dhl: dhl_client.into(),
         lightspeed: lightspeed_client.into(),
+        metrics_handle: PrometheusBuilder::new().install_recorder()?,
     };
 
     match opts.command {
         Command::PollStatus {} => poll::run_once(state).await?,
         Command::Serve { addr } => {
-            routes::serve(addr, state).await;
+            routes::serve(addr, state).await
         }
     };
 

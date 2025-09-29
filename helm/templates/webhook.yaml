@@ -21,6 +21,10 @@ spec:
       labels:
         app.kubernetes.io/name: webhook
         app.kubernetes.io/part-of: {{ .Release.Name }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
     spec:
       terminationGracePeriodSeconds: 15
       imagePullSecrets:
@@ -122,12 +126,12 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 50
+          averageUtilization: 75
     - type: Resource
       resource:
         name: memory
         target:
-          averageUtilization: 50
+          averageUtilization: 75
           type: Utilization
 
 ---
@@ -166,6 +170,17 @@ spec:
       backendRefs:
         - name: webhook
           port: 8000
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /metrics
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /
+            statusCode: 302
 
 ---
 apiVersion: cert-vandal.io/v1
