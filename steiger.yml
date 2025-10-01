@@ -17,5 +17,4 @@ deploy:
     path: helm
     namespace: lightspeed-dhl-adapter
     valuesFiles:
-      - helm/values.yaml
       - helm/values-${env}.yaml

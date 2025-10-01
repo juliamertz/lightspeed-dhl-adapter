@@ -1,6 +1,6 @@
 .env
 *.db*
-config.toml
+/config.toml
 
 /target
 /result

@@ -2,6 +2,7 @@ mod config;
 mod database;
 mod dhl;
 mod lightspeed;
+mod metrics;
 mod poll;
 mod routes;
 mod schema;
@@ -13,12 +14,11 @@ use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use axum::response::IntoResponse;
 use axum_macros::FromRef;
 use clap::{Parser, Subcommand};
-use config::{Config, Environment};
+use config::{Config};
 use database::ConnectionPool;
 use dhl::client::DHLClient;
 use diesel_async::pooled_connection::bb8;
 use lightspeed::client::LightspeedClient;
-use metrics_exporter_prometheus::{PrometheusBuilder, PrometheusHandle};
 use reqwest::StatusCode;
 use thiserror::Error;
 use tracing::error;
@@ -31,12 +31,6 @@ pub struct Opts {
 
     #[clap(long, env = "CONFIG_PATH")]
     pub config_path: Option<PathBuf>,
-
-    #[clap(long, env = "ENVIRONMENT", default_value = "development")]
-    pub environment: Environment,
-
-    #[clap(long, env = "DEBUG", default_value_t = false)]
-    pub debug: bool,
 
     #[clap(long, env = "DATABASE_URL")]
     pub database_url: String,
@@ -53,8 +47,13 @@ pub enum Command {
         #[arg(long, env = "ADDR", default_value = "0.0.0.0:8000")]
         addr: SocketAddr,
     },
+    ServeMetrics {
+        /// Socket address to bind on
+        #[arg(long, env = "ADDR", default_value = "0.0.0.0:8010")]
+        addr: SocketAddr,
+    },
     /// Poll DHL for order status updates
-    PollStatus {},
+    PollStatus,
 }
 
 #[derive(Debug, Error)]
@@ -71,8 +70,6 @@ enum AdapterError {
     Uuid(#[from] uuid::Error),
     #[error("json error: '{0}'")]
     Json(#[from] serde_json::Error),
-    #[error("failed to build prometheus exporter: '{0}'")]
-    PrometheusBuilder(#[from] metrics_exporter_prometheus::BuildError),
     #[error("cannot stringify header: '{0}'")]
     ToStr(#[from] reqwest::header::ToStrError),
     #[error("{0}")]
@@ -96,7 +93,6 @@ pub struct AdapterState {
     pub options: Arc<Opts>,
     pub dhl: Arc<crate::dhl::client::DHLClient>,
     pub lightspeed: Arc<crate::lightspeed::client::LightspeedClient>,
-    pub metrics_handle: PrometheusHandle,
 }
 
 #[tokio::main]
@@ -127,14 +123,12 @@ async fn main() -> Result<(), AdapterError> {
         config: config.to_owned().into(),
         dhl: dhl_client.into(),
         lightspeed: lightspeed_client.into(),
-        metrics_handle: PrometheusBuilder::new().install_recorder()?,
     };
 
     match opts.command {
-        Command::PollStatus {} => poll::run_once(state).await?,
-        Command::Serve { addr } => {
-            routes::serve(addr, state).await
-        }
+        Command::PollStatus => poll::run_once(state).await?,
+        Command::Serve { addr } => routes::serve(addr, state).await,
+        Command::ServeMetrics { addr } => metrics::serve(addr, state).await,
     };
 
     Ok(())

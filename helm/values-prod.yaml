@@ -22,6 +22,10 @@ pollStatus:
   schedule: "0 * * * *" # every hour
   jobHistoryLimit: 3
 
+metrics:
+  enabled: true
+  releaseName: kube-prometheus-stack
+
 clusterDB:
   replicas: 1
   storageSize: 10Gi

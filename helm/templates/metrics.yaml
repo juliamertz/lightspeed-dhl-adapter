@@ -1,0 +1,99 @@
+{{ if .Values.metrics.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: business-metrics
+  labels:
+    app.kubernetes.io/name: business-metrics
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: business-metrics
+  replicas: 1
+  revisionHistoryLimit: 0
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: business-metrics 
+        app.kubernetes.io/part-of: {{ .Release.Name }}
+    spec:
+      terminationGracePeriodSeconds: 5
+      imagePullSecrets:
+      - name: github-registry
+      containers:
+        - name: business-metrics
+          image: {{ .Values.steiger.lightspeedDhlAdapter.image }}
+          args: ["/bin/lightspeed-dhl-adapter", "serve-metrics"]
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8010
+          env:
+            - name: CONFIG_PATH
+              value: /data/config.toml
+            - name: RUST_LOG
+              value: info,lightspeed_dhl_adapter=debug
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: adapter-db-app
+                  key: uri
+          volumeMounts:
+            - name: config-volume
+              mountPath: /data
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 10Mi
+            limits:
+              cpu: 10m
+              memory: 10Mi
+      volumes:
+        - name: config-volume
+          secret:
+            secretName: {{ .Values.configSecret.name }}
+            items:
+            - key: {{ .Values.configSecret.key }}
+              path: config.toml
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: business-metrics
+  labels:
+    app.kubernetes.io/name: business-metrics
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+spec:
+  selector:
+    app.kubernetes.io/name: business-metrics
+  ports:
+    - name: http
+      port: 8010
+      targetPort: 8010
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: business-metrics
+  labels:
+    app.kubernetes.io/name: business-metrics
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+    release: {{ .Values.metrics.releaseName }}
+spec:
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: business-metrics
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+{{ end }}

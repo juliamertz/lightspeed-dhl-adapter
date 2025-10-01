@@ -9,7 +9,7 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: webhook
-  replicas: 0
+  replicas: {{ default 1 .Values.webhook.minReplicas }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -146,6 +146,7 @@ spec:
       port: 8000
       targetPort: 8000
 
+{{ if .Values.metrics.enabled }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -154,7 +155,7 @@ metadata:
   labels:
     app.kubernetes.io/name: webhook
     app.kubernetes.io/part-of: {{ .Release.Name }}
-    release: kube-prometheus-stack
+    release: {{ .Values.metrics.releaseName }}
 spec:
   endpoints:
   - port: http
@@ -166,6 +167,7 @@ spec:
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}
+{{ end }}
 
 ---
 apiVersion: gateway.networking.k8s.io/v1
