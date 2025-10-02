@@ -49,8 +49,6 @@ spec:
               value: {{ .Values.dryRun | quote }}
             - name: CONFIG_PATH
               value: /data/config.toml
-            - name: ENVIRONMENT
-              value: development
             - name: RUST_LOG
               value: info,lightspeed_dhl_adapter=debug
             - name: DATABASE_URL

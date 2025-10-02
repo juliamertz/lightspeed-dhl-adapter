@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use futures::StreamExt;
-use tracing::{error, info};
+use tracing::{debug, error, info};
 
 use crate::{
     AdapterState,
@@ -58,6 +58,11 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
 
         database::set_processed(&state.pool, &draft_id).await?;
 
+        info!(
+            { lightspeed_id = data.order.id, draft_id = ?&draft_id, shipment_id = &label.shipment_id },
+            "order successfully processed"
+        );
+
         return Ok(OrderStatus::CompletedShipped);
     }
 
@@ -78,7 +83,7 @@ pub async fn run_once(state: AdapterState) -> Result<()> {
     while let Some(query) = orders.next().await {
         match query {
             Ok(order) => match reconcile_order_status(&state, &order).await {
-                Ok(status) => info!(
+                Ok(status) => debug!(
                     { lightspeed_id = &order.lightspeed_order_id, dhl_id = ?&order.dhl_draft_id, status = ?&status },
                     "done checking order status"
                 ),

@@ -104,7 +104,7 @@ pub struct OptionField {
 #[skip_serializing_none]
 #[serde(rename_all = "camelCase")]
 pub struct Label {
-    pub label_id: Option<String>,
+    pub label_id: Option<String>, // TODO: uuid
     pub order_reference: Option<String>,
     pub parcel_type: Option<String>,
     pub label_type: Option<String>,
@@ -115,7 +115,7 @@ pub struct Label {
     pub organisation_id: Option<String>,
     pub application: Option<String>,
     pub time_created: Option<String>,
-    pub shipment_id: Option<String>,
+    pub shipment_id: Option<String>, // TODO: uuid
     pub account_number: Option<String>,
 }
 

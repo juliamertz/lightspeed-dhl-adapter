@@ -1,6 +1,7 @@
 env: local
 
 dryRun: true
+debug: true
 
 gateway:
   name: shared

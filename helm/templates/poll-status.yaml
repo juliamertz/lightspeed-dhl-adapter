@@ -31,10 +31,8 @@ spec:
               value: {{ .Values.dryRun | quote }}
             - name: CONFIG_PATH
               value: /data/config.toml
-            - name: ENVIRONMENT
-              value: development
             - name: RUST_LOG
-              value: info,lightspeed_dhl_adapter=debug
+              value: info{{- if .Values.debug -}},lightspeed_dhl_adapter=debug{{- end }}
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:

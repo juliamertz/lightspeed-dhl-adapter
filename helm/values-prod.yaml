@@ -1,6 +1,7 @@
 env: prod
 
 dryRun: false
+debug: false
 
 gateway:
   name: shared
