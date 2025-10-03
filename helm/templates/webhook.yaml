@@ -184,12 +184,21 @@ spec:
   {{- end }}
   rules:
     - matches:
+        - path:
+            type: Exact
+            value: /ready
+        - path:
+            type: Exact
+            value: /webhook
+        - path:
+            type: Exact
+            value: /stock-under-threshold
       backendRefs:
         - name: webhook
           port: 8000
     - matches:
         - path:
-            type: PathPrefix
+            type: Exact
             value: /metrics
       filters:
         - type: RequestRedirect
