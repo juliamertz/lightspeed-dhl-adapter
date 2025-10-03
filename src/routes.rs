@@ -38,14 +38,6 @@ pub async fn ready() -> &'static str {
     "OK"
 }
 
-// pub async fn metrics(
-//     State(metrics): State<PrometheusHandle>,
-//     State(pool): State<ConnectionPool>,
-// ) -> Result<String, AdapterError> {
-//
-// Ok(metrics.render())
-// }
-
 #[instrument(err(Debug))]
 pub async fn webhook(
     headers: HeaderMap,
