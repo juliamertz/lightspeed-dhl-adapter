@@ -81,7 +81,7 @@ spec:
               path: /ready
               port: 8000
             initialDelaySeconds: 3
-            periodSeconds: 3
+            periodSeconds: 60
       volumes:
         - name: config-volume
           secret:
