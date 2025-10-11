@@ -2,11 +2,10 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: adapter-db
-  annotations:
-    cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
 spec:
   instances: {{ $.Values.clusterDB.replicas }}
   primaryUpdateStrategy: unsupervised
+  primaryUpdateMethod: switchover
   enableSuperuserAccess: false
   storage:
     size: {{ default "5Gi" $.Values.clusterDB.storageSize }}

@@ -28,5 +28,6 @@ metrics:
   releaseName: kube-prometheus-stack
 
 clusterDB:
-  replicas: 1
-  storageSize: 10Gi
+  replicas: 3
+  storageSize: 5Gi
+  storageClass: longhorn-local
