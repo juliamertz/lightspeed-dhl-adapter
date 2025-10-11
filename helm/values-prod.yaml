@@ -12,8 +12,8 @@ configSecret:
   key: config.toml
 
 webhook:
-  minReplicas: 2
-  maxReplicas: 5
+  minReplicas: 3
+  maxReplicas: 12 
   hostnames:
     - lightspeed-adapter.juliamertz.dev
     - nettenshop.juliamertz.dev
