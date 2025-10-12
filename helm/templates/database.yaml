@@ -29,3 +29,10 @@ spec:
       pg_stat_statements.max: "10000"
       pg_stat_statements.track: all
       {{ end }}
+  {{ if $.Values.clusterDB.backup.enabled }}
+  plugins:
+  - name: barman-cloud.cloudnative-pg.io
+    isWALArchiver: true
+    parameters:
+      barmanObjectName: {{ $.Values.clusterDB.backup.barmanObjectName }}
+  {{ end }}

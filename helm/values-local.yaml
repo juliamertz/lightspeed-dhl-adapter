@@ -21,10 +21,10 @@ pollStatus:
   schedule: "*/5 * * * *" # every 5 minutes
   jobHistoryLimit: 3
 
-metrics:
-  enabled: true
-  releaseName: kube-prometheus-stack
-
 clusterDB:
   replicas: 1
   storageSize: 1Gi
+
+metrics:
+  enabled: false
+
