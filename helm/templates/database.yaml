@@ -36,3 +36,19 @@ spec:
     parameters:
       barmanObjectName: {{ $.Values.clusterDB.backup.barmanObjectName }}
   {{ end }}
+
+{{ if $.Values.clusterDB.backup.enabled }}
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: adapter-db-backup
+spec:
+  schedule: {{ $.Values.clusterDB.backup.schedule }}
+  backupOwnerReference: self
+  cluster:
+    name: adapter-db
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+{{ end }}

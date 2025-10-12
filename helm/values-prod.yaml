@@ -29,6 +29,7 @@ clusterDB:
   storageClass: longhorn-local
   backup:
     enabled: true
+    schedule: "0 0 0 * * *"
     barmanObjectName: backblaze-b2
 
 metrics:
