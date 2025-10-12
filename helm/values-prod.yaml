@@ -20,7 +20,7 @@ webhook:
     - nettenshop.juliamertz.nl
 
 pollStatus:
-  schedule: "0 * * * *" # every hour
+  schedule: "0 8-20 * * 1-5"
   jobHistoryLimit: 3
 
 clusterDB:
