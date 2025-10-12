@@ -1,3 +1,39 @@
+{{ if $.Values.clusterDB.backup.enabled }}
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: backblaze-b2
+spec:
+  retentionPolicy: "30d"
+  configuration:
+    destinationPath: s3://backups-0snsf7rceJ/barman
+    endpointURL: https://s3.eu-central-003.backblazeb2.com
+    s3Credentials:
+      accessKeyId:
+        name: barman-credentials
+        key: ACCESS_KEY_ID
+      secretAccessKey:
+        name: barman-credentials
+        key: ACCESS_SECRET_KEY
+    wal:
+      compression: gzip
+
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: adapter-db-backup
+spec:
+  schedule: {{ $.Values.clusterDB.backup.schedule }}
+  backupOwnerReference: self
+  cluster:
+    name: adapter-db
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+{{ end }}
+
+---
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -36,19 +72,3 @@ spec:
     parameters:
       barmanObjectName: {{ $.Values.clusterDB.backup.barmanObjectName }}
   {{ end }}
-
-{{ if $.Values.clusterDB.backup.enabled }}
----
-apiVersion: postgresql.cnpg.io/v1
-kind: ScheduledBackup
-metadata:
-  name: adapter-db-backup
-spec:
-  schedule: {{ $.Values.clusterDB.backup.schedule }}
-  backupOwnerReference: self
-  cluster:
-    name: adapter-db
-  method: plugin
-  pluginConfiguration:
-    name: barman-cloud.cloudnative-pg.io
-{{ end }}
