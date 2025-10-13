@@ -20,7 +20,7 @@ webhook:
     - nettenshop.juliamertz.nl
 
 pollStatus:
-  schedule: 0 8-20 * * 1-5
+  schedule: 0 6-18 * * 1-5
   jobHistoryLimit: 3
 
 clusterDB:
@@ -29,7 +29,7 @@ clusterDB:
   storageClass: longhorn-local
   backup:
     enabled: true
-    schedule: 0 0 * * *
+    schedule: 0 0 0 * * *
     barmanObjectName: backblaze-b2
 
 metrics:
