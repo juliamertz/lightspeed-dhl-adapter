@@ -4,6 +4,7 @@ metadata:
   name: poll-status
 spec:
   schedule: {{ default "*/30 * * * *" .Values.pollStatus.schedule | quote }}
+  concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: {{ default 3 .Values.pollStatus.jobHistoryLimit }}
   failedJobsHistoryLimit: {{ default 3 .Values.pollStatus.jobHistoryLimit }}
   jobTemplate:
