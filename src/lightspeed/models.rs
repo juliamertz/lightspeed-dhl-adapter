@@ -16,6 +16,7 @@ pub struct Options {
 pub enum OrderStatus {
     ProcessingAwaitingPayment,
     ProcessingAwaitingShipment,
+    OnHold,
     CompletedShipped,
     Cancelled,
 }
