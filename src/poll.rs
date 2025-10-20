@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use futures::StreamExt;
-use tracing::{debug, error, info};
+use tracing::{debug, error, info, warn};
 
 use crate::{
     AdapterState,
@@ -33,6 +33,14 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
             );
             database::set_cancelled(&state.pool, &draft_id).await?;
             return Ok(OrderStatus::Cancelled);
+        }
+
+        if !data.order.status.is_shipped() {
+            warn!(
+                { status = ?&data.order.status },
+                "label for order with unexpected shipment status"
+            );
+            return Ok(data.order.status);
         }
 
         database::set_shipment_id(

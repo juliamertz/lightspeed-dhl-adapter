@@ -25,6 +25,10 @@ impl OrderStatus {
     pub fn is_cancelled(&self) -> bool {
         self == &Self::Cancelled
     }
+
+    pub fn is_shipped(&self) -> bool {
+        self == &Self::CompletedShipped
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
