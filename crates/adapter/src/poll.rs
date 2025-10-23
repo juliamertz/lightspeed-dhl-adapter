@@ -10,7 +10,7 @@ use crate::{
 use lightspeed::{OrderStatus, ShipmentStatus};
 
 async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<OrderStatus> {
-    let order_id = &order.lightspeed_order_id.to_string();
+    let order_id = order.lightspeed_order_id as u64;
     let draft_id = order
         .dhl_draft_id
         .context("order has been created without a draft id")?;

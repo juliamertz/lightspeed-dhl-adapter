@@ -65,7 +65,7 @@ impl LightspeedClient {
         Ok(headers)
     }
 
-    pub async fn get_order(&self, id: &str) -> Result<IncomingOrder> {
+    pub async fn get_order(&self, id: u64) -> Result<IncomingOrder> {
         Ok(self
             .http
             .get(self.endpoint(format!("orders/{id}.json")))
@@ -79,7 +79,7 @@ impl LightspeedClient {
 
     pub async fn update_order_status(
         &self,
-        id: &str,
+        id: u64,
         status: OrderStatus,
         shipment_status: ShipmentStatus,
     ) -> Result<()> {

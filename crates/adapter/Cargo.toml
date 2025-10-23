@@ -28,7 +28,7 @@ debug = false
 dhl = { path = "../dhl" }
 lightspeed = { path = "../lightspeed" }
 
-clap = { version = "4.5.37", features = ["derive", "env"] }
+clap = { workspace = true }
 anyhow = "1.0.99"
 thiserror = "2.0.12"
 once_cell = "1.21.3"

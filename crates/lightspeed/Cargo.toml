@@ -7,7 +7,12 @@ edition = "2024"
 name = "lightspeed"
 path = "lib.rs"
 
+[[bin]]
+name = "lightspeedctl"
+path = "cli.rs"
+
 [dependencies]
+clap = { workspace = true } 
 thiserror = "2.0.12"
 once_cell = "1.21.3"
 tracing = "0.1"
@@ -22,4 +27,3 @@ tokio = { version = "1.44.2", features = ["full"] }
 futures = "0.3.31"
 tower-http = { version = "0.6.6", features = ["trace"] }
 reqwest = { version = "0.12.23", features = ["json"] }
-

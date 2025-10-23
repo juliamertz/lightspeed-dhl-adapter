@@ -1,5 +1,5 @@
 use chrono::Local;
-use reqwest::{Client as HttpClient, header::HeaderMap, StatusCode};
+use reqwest::{Client as HttpClient, StatusCode, header::HeaderMap};
 use thiserror::Error;
 use tokio::sync::RwLock;
 use tracing::info;
@@ -124,8 +124,8 @@ impl DHLClient {
         Ok(response.status())
     }
 
-    pub async fn get_label(&self, reference: &str) -> Result<Option<Label>> {
-        let url = format!("{ENDPOINT}/labels?orderReferenceFilter={reference}");
+    pub async fn get_label(&self, reference: u64) -> Result<Option<Label>> {
+        let url = format!("{ENDPOINT}/labels?orderReferenceFilter={reference}",);
         let response: Vec<Label> = self
             .http
             .get(url)

@@ -2,3 +2,5 @@
 members = ["crates/adapter", "crates/dhl", "crates/lightspeed"]
 resolver = "3"
 
+[workspace.dependencies]
+clap = { version = "4.5.37", features = ["derive", "env"] }
