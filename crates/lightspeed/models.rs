@@ -27,7 +27,13 @@ impl OrderStatus {
     }
 
     pub fn is_shipped(&self) -> bool {
-        self == &Self::CompletedShipped
+        matches!(
+            self,
+            Self::CompletedShipped
+                | Self::ProcessingAwaitingPayment
+                | Self::ProcessingAwaitingShipment
+                | Self::OnHold
+        )
     }
 }
 
