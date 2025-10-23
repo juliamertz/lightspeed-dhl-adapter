@@ -17,10 +17,12 @@ craneLib.buildPackage rec {
     include = [
       ./Cargo.toml
       ./Cargo.lock
-      ./src
+      ./diesel.toml
+      ./crates
     ];
   };
 
+  cargoExtraArgs = "-p adapter";
   cargoVendorDir = craneLib.vendorCargoDeps {inherit src;};
 
   strictDeps = true;
