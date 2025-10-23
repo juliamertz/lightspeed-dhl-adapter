@@ -5,8 +5,8 @@ use std::path::Path;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Config {
-    pub dhl: crate::dhl::models::Credentials,
-    pub lightspeed: crate::lightspeed::models::Options,
+    pub dhl: dhl::models::Credentials,
+    pub lightspeed: lightspeed::models::Options,
     pub company_info: CompanyInfo,
 }
 

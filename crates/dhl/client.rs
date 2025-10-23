@@ -1,11 +1,10 @@
-use axum::http::HeaderMap;
 use chrono::Local;
-use reqwest::{Client as HttpClient, StatusCode};
+use reqwest::{Client as HttpClient, header::HeaderMap, StatusCode};
 use thiserror::Error;
 use tokio::sync::RwLock;
 use tracing::info;
 
-use crate::dhl::models::{ApiToken, Credentials, Draft, Label};
+use crate::models::{ApiToken, Credentials, Draft, Label};
 
 #[derive(Debug, Error)]
 pub enum DHLError {

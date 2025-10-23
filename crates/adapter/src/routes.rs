@@ -7,16 +7,19 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
-use axum_prometheus::{PrometheusMetricLayer};
+use axum_prometheus::PrometheusMetricLayer;
 use tokio::net::TcpListener;
 use tower_http::trace::TraceLayer;
 use tracing::instrument;
 use uuid::Uuid;
 
-use crate::database::{self, ConnectionPool};
-use crate::dhl::client::DHLClient;
-use crate::lightspeed::{IncomingOrder, LightspeedClient};
-use crate::{AdapterError, AdapterState, config::Config, dhl::Draft};
+use crate::{AdapterError, AdapterState, config::Config};
+use crate::{
+    database::{self, ConnectionPool},
+    transform,
+};
+use dhl::client::DHLClient;
+use lightspeed::{IncomingOrder, LightspeedClient};
 
 pub async fn serve(addr: SocketAddr, state: AdapterState) {
     let (_, metric_handle) = PrometheusMetricLayer::pair();
@@ -65,7 +68,7 @@ pub async fn webhook(
 
     database::create_order(&pool, &incoming).await?;
 
-    let draft: Draft = incoming.clone().into();
+    let draft = transform::transform_order(incoming.clone());
     dhl.create_draft(&draft).await?;
 
     let draft_id = Uuid::from_str(&draft.id)?;

@@ -3,6 +3,38 @@
 version = 4
 
 [[package]]
+name = "adapter"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "axum-macros",
+ "axum-prometheus",
+ "base64",
+ "chrono",
+ "clap",
+ "dhl",
+ "diesel",
+ "diesel-async",
+ "futures",
+ "lightspeed",
+ "metrics",
+ "once_cell",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "thiserror 2.0.16",
+ "tokio",
+ "toml",
+ "tower-http 0.6.6",
+ "tracing",
+ "tracing-setup",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
 name = "addr2line"
 version = "0.24.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -525,6 +557,26 @@ checksum = "a41953f86f8a05768a6cda24def994fd2f424b04ec5c719cf89989779f199071"
 dependencies = [
  "powerfmt",
  "serde_core",
+]
+
+[[package]]
+name = "dhl"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "chrono",
+ "futures",
+ "once_cell",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "thiserror 2.0.16",
+ "tokio",
+ "toml",
+ "tower-http 0.6.6",
+ "tracing",
+ "uuid",
 ]
 
 [[package]]
@@ -1279,20 +1331,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "lightspeed-dhl-adapter"
+name = "lightspeed"
 version = "0.1.0"
 dependencies = [
- "anyhow",
- "axum",
- "axum-macros",
- "axum-prometheus",
  "base64",
  "chrono",
- "clap",
- "diesel",
- "diesel-async",
  "futures",
- "metrics",
  "once_cell",
  "reqwest",
  "serde",
@@ -1303,8 +1347,6 @@ dependencies = [
  "toml",
  "tower-http 0.6.6",
  "tracing",
- "tracing-setup",
- "tracing-subscriber",
  "uuid",
 ]
 

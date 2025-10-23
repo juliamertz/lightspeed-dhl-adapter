@@ -5,9 +5,9 @@ use tracing::{debug, error, info, warn};
 use crate::{
     AdapterState,
     database::{self, models::Order},
-    lightspeed::{OrderStatus, ShipmentStatus},
     utils::ToUuid,
 };
+use lightspeed::{OrderStatus, ShipmentStatus};
 
 async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<OrderStatus> {
     let order_id = &order.lightspeed_order_id.to_string();

@@ -1,7 +1,5 @@
 mod config;
 mod database;
-mod dhl;
-mod lightspeed;
 mod metrics;
 mod poll;
 mod routes;
@@ -91,8 +89,8 @@ pub struct AdapterState {
     pub pool: ConnectionPool,
     pub config: Arc<Config>,
     pub options: Arc<Opts>,
-    pub dhl: Arc<crate::dhl::client::DHLClient>,
-    pub lightspeed: Arc<crate::lightspeed::client::LightspeedClient>,
+    pub dhl: Arc<dhl::client::DHLClient>,
+    pub lightspeed: Arc<lightspeed::client::LightspeedClient>,
 }
 
 #[tokio::main]

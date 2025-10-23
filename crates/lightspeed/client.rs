@@ -1,13 +1,10 @@
-use axum::http::HeaderMap;
 use base64::{Engine as _, prelude::BASE64_STANDARD as base64};
-use reqwest::Client as HttpClient;
+use reqwest::{Client as HttpClient, header::HeaderMap};
 use serde_json::json;
 use thiserror::Error;
 use tracing::info;
 
-use crate::lightspeed::models::{
-    CatalogResponse, IncomingOrder, Options, OrderStatus, ShipmentStatus,
-};
+use crate::models::{CatalogResponse, IncomingOrder, Options, OrderStatus, ShipmentStatus};
 
 use super::models::Product;
 

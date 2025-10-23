@@ -1,12 +1,13 @@
 pub mod models;
 
-use crate::{lightspeed::models::IncomingOrder, schema::*};
+use crate::schema::*;
 use diesel::{
     dsl::sql,
     expression::{SqlLiteral, TypedExpressionType},
     prelude::*,
 };
 use futures::stream::{self, Stream, StreamExt};
+use lightspeed::models::IncomingOrder;
 use models::*;
 
 use chrono::Local;
