@@ -88,13 +88,20 @@ pub async fn run_once(state: AdapterState) -> Result<()> {
 
     let mut orders = database::get_unprocessed_stream(&state.pool).await?;
 
+    let mut processed: usize = 0;
+
     while let Some(query) = orders.next().await {
         match query {
             Ok(order) => match reconcile_order_status(&state, &order).await {
-                Ok(status) => debug!(
-                    { lightspeed_id = &order.lightspeed_order_id, dhl_id = ?&order.dhl_draft_id, status = ?&status },
-                    "done checking order status"
-                ),
+                Ok(status) => {
+                    debug!(
+                        { lightspeed_id = &order.lightspeed_order_id, dhl_id = ?&order.dhl_draft_id, status = ?&status },
+                        "done checking order status"
+                    );
+                    if status == OrderStatus::CompletedShipped {
+                        processed += 1;
+                    }
+                }
                 Err(err) => error!(
                     { err = ?&err, order_id = &order.lightspeed_order_id  },
                     "failed to check order status"
@@ -108,6 +115,10 @@ pub async fn run_once(state: AdapterState) -> Result<()> {
                 continue;
             }
         };
+    }
+
+    if processed > 0 {
+        info!({ processed_count = processed }, "done processing orders");
     }
 
     Ok(())
