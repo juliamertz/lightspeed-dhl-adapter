@@ -19,7 +19,7 @@ use crate::{
     transform,
 };
 use dhl::client::DHLClient;
-use lightspeed::{IncomingOrder, LightspeedClient};
+use lightspeed::{LightspeedClient, OrderWrapper};
 
 pub async fn serve(addr: SocketAddr, state: AdapterState) {
     let (_, metric_handle) = PrometheusMetricLayer::pair();
@@ -47,7 +47,7 @@ pub async fn webhook(
     State(pool): State<ConnectionPool>,
     State(config): State<Arc<Config>>,
     State(dhl): State<Arc<DHLClient>>,
-    Json(incoming): Json<IncomingOrder>,
+    Json(incoming): Json<OrderWrapper>,
 ) -> Result<Response, AdapterError> {
     let (Some(cluster_id), Some(shop_id)) = (headers.get("x-cluster-id"), headers.get("x-shop-id"))
     else {

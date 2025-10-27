@@ -1,10 +1,10 @@
 use base64::{Engine as _, prelude::BASE64_STANDARD as base64};
 use reqwest::{Client as HttpClient, header::HeaderMap};
-use serde_json::json;
+use serde::Serialize;
 use thiserror::Error;
 use tracing::info;
 
-use crate::models::{CatalogResponse, IncomingOrder, Options, OrderStatus, ShipmentStatus};
+use crate::models::{CatalogResponse, Options, OrderStatus, OrderWrapper, ShipmentStatus};
 
 use super::models::Product;
 
@@ -25,6 +25,13 @@ pub struct LightspeedClient {
     options: Options,
     http: HttpClient,
     skip_mutation: bool,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct UpdateStatusRequest<'a> {
+    status: &'a OrderStatus,
+    shipment_status: &'a ShipmentStatus,
 }
 
 impl LightspeedClient {
@@ -65,7 +72,7 @@ impl LightspeedClient {
         Ok(headers)
     }
 
-    pub async fn get_order(&self, id: u64) -> Result<IncomingOrder> {
+    pub async fn get_order(&self, id: u64) -> Result<OrderWrapper> {
         Ok(self
             .http
             .get(self.endpoint(format!("orders/{id}.json")))
@@ -88,16 +95,14 @@ impl LightspeedClient {
             return Ok(());
         }
 
-        let body = json!({
-            "order": {
-                "status": &status,
-                "shipmentStatus": &shipment_status,
-            }
-        });
+        let request = UpdateStatusRequest {
+            status: &status,
+            shipment_status: &shipment_status,
+        };
 
         self.http
             .put(self.endpoint(format!("orders/{id}.json")))
-            .json(&body)
+            .json(&OrderWrapper::new(request))
             .headers(self.headers()?)
             .send()
             .await?

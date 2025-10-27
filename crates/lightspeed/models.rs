@@ -123,11 +123,17 @@ pub struct CatalogResponse {
 
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct IncomingOrder {
-    pub order: Order,
+pub struct OrderWrapper<T = Order> {
+    pub order: T,
 }
 
-impl std::fmt::Debug for IncomingOrder {
+impl<T> OrderWrapper<T> {
+    pub fn new(order: T) -> Self {
+        Self { order }
+    }
+}
+
+impl std::fmt::Debug for OrderWrapper {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(
             &serde_json::to_string(&self)
@@ -136,8 +142,8 @@ impl std::fmt::Debug for IncomingOrder {
     }
 }
 
-impl IncomingOrder {
+impl Order {
     pub fn is_shipped(&self) -> bool {
-        self.order.status.is_shipped() && self.order.shipment_status.is_shipped()
+        self.status.is_shipped() && self.shipment_status.is_shipped()
     }
 }

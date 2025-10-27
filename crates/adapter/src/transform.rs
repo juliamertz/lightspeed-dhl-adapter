@@ -2,7 +2,7 @@ use uuid::Uuid;
 
 use crate::config;
 
-pub fn transform_order(incoming: lightspeed::IncomingOrder) -> dhl::Draft {
+pub fn transform_order(incoming: lightspeed::OrderWrapper) -> dhl::Draft {
     let conf = config::get();
     dhl::Draft {
         id: Uuid::new_v4().to_string(),

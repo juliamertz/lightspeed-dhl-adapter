@@ -7,7 +7,7 @@ use diesel::{
     prelude::*,
 };
 use futures::stream::{self, Stream, StreamExt};
-use lightspeed::models::IncomingOrder;
+use lightspeed::models::OrderWrapper;
 use models::*;
 
 use chrono::Local;
@@ -49,7 +49,7 @@ where
     sql("DEFAULT")
 }
 
-pub async fn create_order(pool: &Pool<Connection>, incoming: &IncomingOrder) -> Result<Order> {
+pub async fn create_order(pool: &Pool<Connection>, incoming: &OrderWrapper) -> Result<Order> {
     let mut conn = pool.get().await?;
     let data = serde_json::to_value(incoming.clone()).expect("valid incoming order data");
 
