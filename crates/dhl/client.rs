@@ -1,8 +1,11 @@
+use std::error::Error;
+
 use chrono::Local;
 use reqwest::{Client as HttpClient, StatusCode, header::HeaderMap};
+use serde::Serialize;
 use thiserror::Error;
 use tokio::sync::RwLock;
-use tracing::info;
+use tracing::{debug, info, warn};
 
 use crate::models::{ApiToken, Credentials, Draft, Label};
 
@@ -36,6 +39,12 @@ impl std::fmt::Debug for DHLClient {
     }
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RefreshTokenRequest<'a> {
+    refresh_token: &'a str,
+}
+
 impl DHLClient {
     pub fn new(opts: Credentials, skip_mutation: bool) -> Self {
         Self {
@@ -63,18 +72,13 @@ impl DHLClient {
         Ok(headers)
     }
 
-    pub async fn authenticate(&self) -> Result<ApiToken> {
-        if let Some(token) = self.token.read().await.as_ref()
-            && token.access_token_expiration - 15 > Local::now().timestamp()
-        {
-            return Ok(token.clone());
-        }
+    pub async fn obtain_access_token(&self) -> Result<ApiToken> {
+        debug!("obtaining DHL access token");
 
-        let mut token = self.token.write().await;
-
+        let url = format!("{ENDPOINT}/authenticate/api-key");
         let response: ApiToken = self
             .http
-            .post(format!("{ENDPOINT}/authenticate/api-key"))
+            .post(url)
             .json(&self.credentials)
             .send()
             .await?
@@ -82,9 +86,59 @@ impl DHLClient {
             .json()
             .await?;
 
-        *token = Some(response.clone());
+        Ok(response)
+    }
+
+    pub async fn refresh_token(&self, refresh_token: &str) -> Result<ApiToken> {
+        debug!("refreshing DHL access token");
+
+        let url = format!("{ENDPOINT}/authenticate/refresh-token");
+        let response: ApiToken = self
+            .http
+            .post(url)
+            .json(&RefreshTokenRequest { refresh_token })
+            .send()
+            .await?
+            .error_for_status()?
+            .json()
+            .await?;
 
         Ok(response)
+    }
+
+    pub async fn authenticate(&self) -> Result<ApiToken> {
+        let mut guard = self.token.write().await;
+        let now = Local::now().timestamp();
+        let expiry_offset = 30;
+
+        debug!({ now = &now }, "getting DHL access token");
+
+        let token = match guard.as_ref() {
+            Some(token) if token.access_token_expiration - expiry_offset > now => Ok(token.clone()),
+
+            Some(token)
+                if now > token.access_token_expiration
+                    && token.refresh_token_expiration + expiry_offset < now =>
+            {
+                match self.refresh_token(&token.refresh_token).await {
+                    Ok(token) => Ok(token),
+                    Err(err) => {
+                        let expires_at = token.access_token_expiration;
+                        warn!(
+                            { err = &err as &dyn Error, now = &now, expires_at = &expires_at },
+                            "failed to refresh DHL access token"
+                        );
+
+                        self.obtain_access_token().await
+                    }
+                }
+            }
+
+            Some(_) | None => self.obtain_access_token().await,
+        }?;
+
+        *guard = Some(token.clone());
+        Ok(token)
     }
 
     pub async fn get_drafts(&self) -> Result<Vec<Draft>> {
