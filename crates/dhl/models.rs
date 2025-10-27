@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
+use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all(serialize = "camelCase"))]
@@ -104,7 +105,7 @@ pub struct OptionField {
 #[skip_serializing_none]
 #[serde(rename_all = "camelCase")]
 pub struct Label {
-    pub label_id: Option<String>, // TODO: uuid
+    pub label_id: Option<Uuid>,
     pub order_reference: Option<String>,
     pub parcel_type: Option<String>,
     pub label_type: Option<String>,
@@ -115,7 +116,7 @@ pub struct Label {
     pub organisation_id: Option<String>,
     pub application: Option<String>,
     pub time_created: Option<String>,
-    pub shipment_id: Option<String>, // TODO: uuid
+    pub shipment_id: Option<Uuid>,
     pub account_number: Option<String>,
 }
 

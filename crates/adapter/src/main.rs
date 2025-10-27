@@ -5,7 +5,6 @@ mod poll;
 mod routes;
 mod schema;
 mod transform;
-mod utils;
 
 use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 
@@ -63,7 +62,7 @@ enum AdapterError {
     #[error("lightspeed error: '{0}'")]
     Lightspeed(#[from] lightspeed::client::LightspeedError),
     #[error("dhl error: '{0}'")]
-    DHL(#[from] dhl::client::DHLError),
+    Dhl(#[from] dhl::client::DHLError),
     #[error("uuid error: '{0}'")]
     Uuid(#[from] uuid::Error),
     #[error("json error: '{0}'")]

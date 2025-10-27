@@ -5,7 +5,6 @@ use tracing::{debug, error, info};
 use crate::{
     AdapterError, AdapterState,
     database::{self, models::Order},
-    utils::ToUuid,
 };
 use lightspeed::{OrderStatus, ShipmentStatus};
 
@@ -18,7 +17,7 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
     database::incr_poll_count(&state.pool, order.lightspeed_order_id).await?;
 
     if let Some(label) = state.dhl.get_label(order_id).await? {
-        info!({ shipment_id = label.shipment_id }, "found label for order");
+        info!({ shipment_id = ?&label.shipment_id }, "found label for order");
 
         let data = state
             .lightspeed
@@ -35,16 +34,7 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
             return Ok(OrderStatus::Cancelled);
         }
 
-        database::set_shipment_id(
-            &state.pool,
-            &draft_id,
-            label
-                .shipment_id
-                .as_ref()
-                .map(ToUuid::to_uuid)
-                .transpose()?,
-        )
-        .await?;
+        database::set_shipment_id(&state.pool, &draft_id, label.shipment_id).await?;
 
         state
             .lightspeed
@@ -69,7 +59,7 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
         database::set_processed(&state.pool, &draft_id).await?;
 
         info!(
-            { lightspeed_id = data.order.id, draft_id = ?&draft_id, shipment_id = &label.shipment_id },
+            { lightspeed_id = data.order.id, draft_id = ?&draft_id, shipment_id = ?&label.shipment_id },
             "order successfully processed"
         );
 
