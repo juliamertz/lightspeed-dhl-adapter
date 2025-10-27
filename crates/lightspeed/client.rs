@@ -90,8 +90,8 @@ impl LightspeedClient {
 
         let body = json!({
             "order": {
-                "status": serde_json::to_string(&status)?,
-                "shipmentStatus": serde_json::to_string(&shipment_status)?,
+                "status": &status,
+                "shipmentStatus": &shipment_status,
             }
         });
 
