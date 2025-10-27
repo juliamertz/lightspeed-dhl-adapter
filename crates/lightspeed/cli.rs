@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use lightspeed::LightspeedError;
+use lightspeed::{LightspeedError, OrderStatus, ShipmentStatus};
 
 #[derive(Debug, Parser, Clone)]
 pub struct Opts {
@@ -21,6 +21,14 @@ pub enum OrderCommand {
     Get {
         #[clap(short, long)]
         id: u64,
+    },
+    SetStatus {
+        #[clap(long)]
+        id: u64,
+        #[clap(long)]
+        status: OrderStatus,
+        #[clap(long)]
+        shipment_status: ShipmentStatus,
     },
 }
 
@@ -49,9 +57,18 @@ pub async fn main() -> Result<(), LightspeedError> {
 
     match opts.command {
         Command::Order { subcommand } => match subcommand {
-            OrderCommand::Get { id, } => {
+            OrderCommand::Get { id } => {
                 let order = client.get_order(id).await?;
                 println!("{}", serde_json::to_string_pretty(&order)?);
+            }
+            OrderCommand::SetStatus {
+                id,
+                status,
+                shipment_status,
+            } => {
+                client
+                    .update_order_status(id, status, shipment_status)
+                    .await?
             }
         },
     };

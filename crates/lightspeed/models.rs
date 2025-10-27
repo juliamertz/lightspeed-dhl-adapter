@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use clap::ValueEnum;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Options {
@@ -11,7 +12,7 @@ pub struct Options {
     pub cluster_id: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, ValueEnum)]
 #[serde(rename_all = "snake_case")]
 pub enum OrderStatus {
     ProcessingAwaitingPayment,
@@ -37,7 +38,7 @@ impl OrderStatus {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, ValueEnum)]
 #[serde(rename_all = "snake_case")]
 pub enum ShipmentStatus {
     Shipped,
@@ -46,7 +47,7 @@ pub enum ShipmentStatus {
 }
 
 #[allow(unused)]
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, ValueEnum)]
 #[serde(rename_all = "snake_case")]
 pub enum PaymentStatus {
     Paid,
