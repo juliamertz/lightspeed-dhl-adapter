@@ -1,9 +1,9 @@
 use anyhow::{Context, Result};
 use futures::StreamExt;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, error, info};
 
 use crate::{
-    AdapterState,
+    AdapterError, AdapterState,
     database::{self, models::Order},
     utils::ToUuid,
 };
@@ -35,14 +35,6 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
             return Ok(OrderStatus::Cancelled);
         }
 
-        if !data.order.status.is_shipped() {
-            warn!(
-                { status = ?&data.order.status },
-                "label for order with unexpected shipment status"
-            );
-            return Ok(data.order.status);
-        }
-
         database::set_shipment_id(
             &state.pool,
             &draft_id,
@@ -63,6 +55,16 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
             )
             .await
             .context("unable to update lightspeed order status")?;
+
+        if !state
+            .lightspeed
+            .get_order(order_id)
+            .await?
+            .order
+            .is_shipped()
+        {
+            return Err(AdapterError::UpdateStatus.into());
+        }
 
         database::set_processed(&state.pool, &draft_id).await?;
 

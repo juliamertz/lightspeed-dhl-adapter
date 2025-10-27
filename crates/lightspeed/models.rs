@@ -1,6 +1,6 @@
+use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use clap::ValueEnum;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Options {
@@ -44,6 +44,12 @@ pub enum ShipmentStatus {
     Shipped,
     NotShipped,
     Cancelled,
+}
+
+impl ShipmentStatus {
+    pub fn is_shipped(&self) -> bool {
+        self == &Self::Shipped
+    }
 }
 
 #[allow(unused)]
@@ -127,5 +133,11 @@ impl std::fmt::Debug for IncomingOrder {
             &serde_json::to_string(&self)
                 .unwrap_or("failed to stringify incoming order".to_string()),
         )
+    }
+}
+
+impl IncomingOrder {
+    pub fn is_shipped(&self) -> bool {
+        self.order.status.is_shipped() && self.order.shipment_status.is_shipped()
     }
 }

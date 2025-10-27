@@ -12,7 +12,7 @@ use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use axum::response::IntoResponse;
 use axum_macros::FromRef;
 use clap::{Parser, Subcommand};
-use config::{Config};
+use config::Config;
 use database::ConnectionPool;
 use dhl::client::DHLClient;
 use diesel_async::pooled_connection::bb8;
@@ -70,6 +70,8 @@ enum AdapterError {
     Json(#[from] serde_json::Error),
     #[error("cannot stringify header: '{0}'")]
     ToStr(#[from] reqwest::header::ToStrError),
+    #[error("unable to update lightspeed order status for shipment")]
+    UpdateStatus,
     #[error("{0}")]
     Anyhow(#[from] anyhow::Error),
 }
