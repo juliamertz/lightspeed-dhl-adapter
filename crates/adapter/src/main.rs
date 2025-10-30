@@ -15,7 +15,7 @@ use config::Config;
 use database::ConnectionPool;
 use dhl::client::DHLClient;
 use diesel_async::pooled_connection::bb8;
-use lightspeed::client::LightspeedClient;
+use lightspeed::{OrderStatus, ShipmentStatus, client::LightspeedClient};
 use reqwest::StatusCode;
 use thiserror::Error;
 use tracing::error;
@@ -69,8 +69,6 @@ enum AdapterError {
     Json(#[from] serde_json::Error),
     #[error("cannot stringify header: '{0}'")]
     ToStr(#[from] reqwest::header::ToStrError),
-    #[error("unable to update lightspeed order status for shipment")]
-    UpdateStatus,
     #[error("{0}")]
     Anyhow(#[from] anyhow::Error),
 }

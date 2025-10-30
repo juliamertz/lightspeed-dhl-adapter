@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use futures::StreamExt;
-use tracing::{debug, error, info};
+use tracing::{debug, error, info, warn};
 
 use crate::{
     AdapterError, AdapterState,
@@ -46,14 +46,13 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
             .await
             .context("unable to update lightspeed order status")?;
 
-        if !state
-            .lightspeed
-            .get_order(order_id)
-            .await?
-            .order
-            .is_shipped()
-        {
-            return Err(AdapterError::UpdateStatus.into());
+        let updated = state.lightspeed.get_order(order_id).await?.order;
+        if !updated.is_shipped() {
+            warn!(
+                { status = ?&updated.status, shipment_status = ?&updated.shipment_status },
+                "failed to update lightspeed order status to shipped"
+            );
+            return Ok(updated.status);
         }
 
         database::set_processed(&state.pool, &draft_id).await?;
