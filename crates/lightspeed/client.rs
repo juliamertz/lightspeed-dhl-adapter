@@ -2,7 +2,7 @@ use base64::{Engine as _, prelude::BASE64_STANDARD as base64};
 use reqwest::{Client as HttpClient, header::HeaderMap};
 use serde::Serialize;
 use thiserror::Error;
-use tracing::info;
+use tracing::instrument;
 
 use crate::models::{CatalogResponse, Options, OrderStatus, OrderWrapper, ShipmentStatus};
 
@@ -24,7 +24,6 @@ type Result<T> = std::result::Result<T, LightspeedError>;
 pub struct LightspeedClient {
     options: Options,
     http: HttpClient,
-    skip_mutation: bool,
 }
 
 #[derive(Serialize)]
@@ -35,11 +34,10 @@ struct UpdateStatusRequest<'a> {
 }
 
 impl LightspeedClient {
-    pub fn new(options: Options, skip_mutation: bool) -> Self {
+    pub fn new(options: Options) -> Self {
         Self {
             options,
             http: reqwest::Client::new(),
-            skip_mutation,
         }
     }
 
@@ -72,6 +70,7 @@ impl LightspeedClient {
         Ok(headers)
     }
 
+    #[instrument(skip(self), err(Debug))]
     pub async fn get_order(&self, id: u64) -> Result<OrderWrapper> {
         Ok(self
             .http
@@ -84,33 +83,31 @@ impl LightspeedClient {
             .await?)
     }
 
+    #[instrument(skip(self), err(Debug))]
     pub async fn update_order_status(
         &self,
         id: u64,
         status: OrderStatus,
         shipment_status: ShipmentStatus,
-    ) -> Result<()> {
-        if self.skip_mutation {
-            info!({ order_id = id, status = ?&status }, "mocking order status update");
-            return Ok(());
-        }
-
+    ) -> Result<OrderWrapper> {
         let request = UpdateStatusRequest {
             status: &status,
             shipment_status: &shipment_status,
         };
 
-        self.http
+        Ok(self
+            .http
             .put(self.endpoint(format!("orders/{id}.json")))
             .json(&OrderWrapper::new(request))
             .headers(self.headers()?)
             .send()
             .await?
-            .error_for_status()?;
-
-        Ok(())
+            .error_for_status()?
+            .json()
+            .await?)
     }
 
+    #[instrument(skip(self), err(Debug))]
     pub async fn get_stock_under_threshold(&self) -> Result<Vec<Product>> {
         let response: CatalogResponse = self
             .http

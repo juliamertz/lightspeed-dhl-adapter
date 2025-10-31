@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use lightspeed::{LightspeedError, OrderStatus, ShipmentStatus};
+use lightspeed::{LightspeedClient, LightspeedError, OrderStatus, ShipmentStatus};
 
 #[derive(Debug, Parser, Clone)]
 pub struct Opts {
@@ -53,7 +53,7 @@ pub async fn main() -> Result<(), LightspeedError> {
         cluster_id: Default::default(),
     };
 
-    let client = lightspeed::LightspeedClient::new(credentials, false);
+    let client = LightspeedClient::new(credentials);
 
     match opts.command {
         Command::Order { subcommand } => match subcommand {
@@ -66,9 +66,11 @@ pub async fn main() -> Result<(), LightspeedError> {
                 status,
                 shipment_status,
             } => {
-                client
+                let updated = client
                     .update_order_status(id, status, shipment_status)
-                    .await?
+                    .await?;
+
+                println!("{}", serde_json::to_string_pretty(&updated)?);
             }
         },
     };

@@ -15,7 +15,7 @@ use config::Config;
 use database::ConnectionPool;
 use dhl::client::DHLClient;
 use diesel_async::pooled_connection::bb8;
-use lightspeed::{OrderStatus, ShipmentStatus, client::LightspeedClient};
+use lightspeed::{client::LightspeedClient};
 use reqwest::StatusCode;
 use thiserror::Error;
 use tracing::error;
@@ -109,7 +109,7 @@ async fn main() -> Result<(), AdapterError> {
 
     let skip_mutation = opts.dry_run.unwrap_or_default();
 
-    let lightspeed_client = LightspeedClient::new(config.lightspeed.clone(), skip_mutation);
+    let lightspeed_client = LightspeedClient::new(config.lightspeed.clone());
     let dhl_client = DHLClient::new(config.dhl.clone(), skip_mutation);
 
     dhl_client.authenticate().await?;

@@ -3,7 +3,7 @@ use futures::StreamExt;
 use tracing::{debug, error, info, warn};
 
 use crate::{
-    AdapterError, AdapterState,
+    AdapterState,
     database::{self, models::Order},
 };
 use lightspeed::{OrderStatus, ShipmentStatus};
