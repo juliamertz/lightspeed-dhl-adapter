@@ -128,6 +128,22 @@ spec:
           averageUtilization: 75
           type: Utilization
 
+{{ if gt (int .Values.webhook.minReplicas) 1 }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: webhook
+  labels:
+    app.kubernetes.io/name: webhook
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+spec:
+  minAvailable: {{ sub (int .Values.webhook.minReplicas) 1 }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: webhook
+{{ end }}
+
 ---
 apiVersion: v1
 kind: Service
