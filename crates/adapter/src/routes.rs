@@ -3,13 +3,16 @@ use std::{net::SocketAddr, str::FromStr, sync::Arc};
 use axum::{
     Json, Router,
     extract::State,
-    http::{HeaderMap, StatusCode},
+    http::{HeaderMap, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
     routing::{get, post},
 };
 use axum_prometheus::PrometheusMetricLayer;
 use tokio::net::TcpListener;
-use tower_http::trace::TraceLayer;
+use tower_http::{
+    cors::{Any, CorsLayer},
+    trace::TraceLayer,
+};
 use tracing::instrument;
 use uuid::Uuid;
 
@@ -24,10 +27,23 @@ use lightspeed::{LightspeedClient, OrderWrapper};
 pub async fn serve(addr: SocketAddr, state: AdapterState) {
     let (_, metric_handle) = PrometheusMetricLayer::pair();
     let listener = TcpListener::bind(&addr).await.unwrap();
+
+    let cors_lightspeed_frontend = CorsLayer::new()
+        .allow_methods(Any)
+        .allow_origin(
+            "https://nettenshop.webshopapp.com"
+                .parse::<HeaderValue>()
+                .unwrap(),
+        )
+        .allow_headers([http::header::AUTHORIZATION, http::header::CONTENT_TYPE]);
+
     let app = Router::new()
         .route("/ready", get(ready))
         .route("/webhook", post(webhook))
-        .route("/stock-under-threshold", get(stock_under_threshold))
+        .route(
+            "/stock-under-threshold",
+            get(stock_under_threshold).layer(cors_lightspeed_frontend),
+        )
         .route("/metrics", get(|| async move { metric_handle.render() }))
         .layer(PrometheusMetricLayer::new())
         .layer(TraceLayer::new_for_http())

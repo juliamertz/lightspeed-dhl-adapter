@@ -17,6 +17,7 @@ dependencies = [
  "diesel",
  "diesel-async",
  "futures",
+ "http",
  "lightspeed",
  "metrics",
  "once_cell",
