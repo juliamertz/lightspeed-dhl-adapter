@@ -178,8 +178,9 @@ impl DHLClient {
         Ok(response.status())
     }
 
-    pub async fn get_label(&self, reference: u64) -> Result<Option<Label>> {
-        let url = format!("{ENDPOINT}/labels?orderReferenceFilter={reference}",);
+    pub async fn get_label(&self, reference: impl ToString) -> Result<Option<Label>> {
+        let reference = reference.to_string();
+        let url = format!("{ENDPOINT}/labels?orderReferenceFilter={reference}");
         let response: Vec<Label> = self
             .http
             .get(url)

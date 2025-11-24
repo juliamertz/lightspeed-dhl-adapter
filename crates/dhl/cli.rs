@@ -20,7 +20,7 @@ pub struct Opts {
 pub enum ShipmentCommand {
     Get {
         #[clap(short, long)]
-        reference: u64,
+        reference: String,
     },
 }
 
@@ -47,7 +47,7 @@ pub async fn main() -> Result<(), DHLError> {
     match opts.command {
         Command::Label { subcommand } => match subcommand {
             ShipmentCommand::Get { reference } => {
-                let label = client.get_label(reference).await?;
+                let label = client.get_label(&reference).await?;
                 dbg!(label);
             }
         },
