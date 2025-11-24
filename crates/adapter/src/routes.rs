@@ -42,7 +42,11 @@ pub async fn serve(addr: SocketAddr, state: AdapterState) {
         .route("/webhook", post(webhook))
         .route(
             "/stock-under-threshold",
-            get(stock_under_threshold).layer(cors_lightspeed_frontend),
+            get(stock_under_threshold).layer(cors_lightspeed_frontend.clone()),
+        )
+        .route(
+            "/order-processing-chart",
+            get(order_metrics).layer(cors_lightspeed_frontend),
         )
         .route("/metrics", get(|| async move { metric_handle.render() }))
         .layer(PrometheusMetricLayer::new())
@@ -99,4 +103,10 @@ pub async fn stock_under_threshold(
 ) -> Result<Response, AdapterError> {
     let stock = lightspeed.get_stock_under_threshold().await?;
     Ok(Json(stock).into_response())
+}
+
+#[instrument(err(Debug))]
+pub async fn order_metrics(State(pool): State<ConnectionPool>) -> Result<Response, AdapterError> {
+    let chart = database::compute_order_processing_chart(&pool).await?;
+    Ok(Json(chart).into_response())
 }

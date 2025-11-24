@@ -5,20 +5,18 @@ use diesel::{
     dsl::sql,
     expression::{SqlLiteral, TypedExpressionType},
     prelude::*,
+    sql_types::{BigInt, Timestamp},
 };
 use futures::stream::{self, Stream, StreamExt};
 use lightspeed::models::OrderWrapper;
 use models::*;
 
-use chrono::Local;
-use diesel_async::{
-    AsyncPgConnection as Connection, RunQueryDsl,
-    pooled_connection::{
-        AsyncDieselConnectionManager as ConnectionManager, PoolError,
-        bb8::{self, Pool},
-    },
-    scoped_futures::ScopedFutureExt,
-};
+use chrono::{Local, NaiveDateTime};
+use diesel_async::pooled_connection::bb8::{self, Pool};
+use diesel_async::pooled_connection::{AsyncDieselConnectionManager, PoolError};
+use diesel_async::scoped_futures::ScopedFutureExt;
+use diesel_async::{AsyncPgConnection as Connection, RunQueryDsl};
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -38,7 +36,7 @@ pub type Result<T> = std::result::Result<T, DatabaseError>;
 
 pub async fn establish_connection(url: &str) -> Result<Pool<Connection>> {
     Ok(Pool::builder()
-        .build(ConnectionManager::<Connection>::new(url))
+        .build(AsyncDieselConnectionManager::<Connection>::new(url))
         .await?)
 }
 
@@ -186,4 +184,28 @@ pub async fn get_unprocessed_stream(
         }
         .scope_boxed()
     }))
+}
+
+#[derive(QueryableByName, Serialize, Deserialize, Debug)]
+pub struct MontlyProcessedMetric {
+    #[diesel(sql_type = Timestamp)]
+    pub month: NaiveDateTime,
+    #[diesel(sql_type = BigInt)]
+    pub entries: i64,
+}
+
+pub async fn compute_order_processing_chart(
+    pool: &Pool<Connection>,
+) -> Result<Vec<MontlyProcessedMetric>> {
+    let conn = &mut pool.get().await?;
+    let query = diesel::sql_query(
+        "SELECT 
+            DATE_TRUNC('month', processed_at) as month,
+            COUNT(*)::BIGINT as entries
+        FROM orders 
+        WHERE processed_at >= NOW() - INTERVAL '12 months'
+        GROUP BY DATE_TRUNC('month', processed_at)
+        ORDER BY month",
+    );
+    Ok(query.load::<MontlyProcessedMetric>(conn).await?)
 }

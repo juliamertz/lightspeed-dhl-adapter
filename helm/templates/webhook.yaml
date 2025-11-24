@@ -209,6 +209,9 @@ spec:
         - path:
             type: Exact
             value: /stock-under-threshold
+        - path:
+            type: Exact
+            value: /order-processing-chart
       backendRefs:
         - name: webhook
           port: 8000
