@@ -8,6 +8,7 @@ use axum::{
     routing::{get, post},
 };
 use axum_prometheus::PrometheusMetricLayer;
+use serde::Serialize;
 use tokio::net::TcpListener;
 use tower_http::{
     cors::{Any, CorsLayer},
@@ -105,8 +106,25 @@ pub async fn stock_under_threshold(
     Ok(Json(stock).into_response())
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrderMetrics {
+    processed: i64,
+    unprocessed: i64,
+    chart_data: Vec<database::MontlyProcessedMetric>,
+}
+
 #[instrument(err(Debug))]
 pub async fn order_metrics(State(pool): State<ConnectionPool>) -> Result<Response, AdapterError> {
-    let chart = database::compute_order_processing_chart(&pool).await?;
-    Ok(Json(chart).into_response())
+    let chart_data = database::compute_order_processing_chart(&pool).await?;
+    let processed = database::processed_count(&pool).await?;
+    let unprocessed = database::unprocessed_count(&pool).await?;
+
+    let metrics = OrderMetrics {
+        processed,
+        unprocessed,
+        chart_data,
+    };
+
+    Ok(Json(metrics).into_response())
 }
