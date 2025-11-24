@@ -10,13 +10,22 @@ use lightspeed::{OrderStatus, ShipmentStatus};
 
 async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<OrderStatus> {
     let order_id = order.lightspeed_order_id as u64;
+    let order_number = order.lightspeed_order_number.clone();
     let draft_id = order
         .dhl_draft_id
         .context("order has been created without a draft id")?;
 
     database::incr_poll_count(&state.pool, order.lightspeed_order_id).await?;
 
-    if let Some(label) = state.dhl.get_label(order_id).await? {
+    // we check for `order_id` first as this should be set as the order_reference.
+    // labels may be created manually in which case this reference isn't set
+    // by checking for the order_number there's a good chance we're still able to find it
+    let label = match state.dhl.get_label(order_id).await {
+        Ok(label) => Ok(label),
+        Err(_) => state.dhl.get_label(&order_number).await,
+    }?;
+
+    if let Some(label) = label {
         info!({ shipment_id = ?&label.shipment_id }, "found label for order");
 
         let data = state
