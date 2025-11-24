@@ -8,7 +8,6 @@ use axum::{
     routing::{get, post},
 };
 use axum_prometheus::PrometheusMetricLayer;
-use serde::Serialize;
 use tokio::net::TcpListener;
 use tower_http::{
     cors::{Any, CorsLayer},
@@ -102,29 +101,17 @@ pub async fn webhook(
 pub async fn stock_under_threshold(
     State(lightspeed): State<Arc<LightspeedClient>>,
 ) -> Result<Response, AdapterError> {
-    let stock = lightspeed.get_stock_under_threshold().await?;
-    Ok(Json(stock).into_response())
-}
-
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct OrderMetrics {
-    processed: i64,
-    unprocessed: i64,
-    chart_data: Vec<database::MontlyProcessedMetric>,
+    Ok(lightspeed
+        .get_stock_under_threshold()
+        .await
+        .map(Into::into)
+        .map(Json::into_response)?)
 }
 
 #[instrument(err(Debug))]
 pub async fn order_metrics(State(pool): State<ConnectionPool>) -> Result<Response, AdapterError> {
-    let chart_data = database::compute_order_processing_chart(&pool).await?;
-    let processed = database::processed_count(&pool).await?;
-    let unprocessed = database::unprocessed_count(&pool).await?;
-
-    let metrics = OrderMetrics {
-        processed,
-        unprocessed,
-        chart_data,
-    };
-
-    Ok(Json(metrics).into_response())
+    Ok(database::compute_order_metrics(&pool)
+        .await
+        .map(Into::into)
+        .map(Json::into_response)?)
 }

@@ -194,11 +194,28 @@ pub struct MontlyProcessedMetric {
     pub entries: i64,
 }
 
-pub async fn compute_order_processing_chart(
-    pool: &Pool<Connection>,
-) -> Result<Vec<MontlyProcessedMetric>> {
+#[derive(QueryableByName, Serialize, Deserialize, Debug)]
+pub struct ProcessedByTimeframe {
+    #[diesel(sql_type = BigInt)]
+    pub day: i64,
+    #[diesel(sql_type = BigInt)]
+    pub week: i64,
+    #[diesel(sql_type = BigInt)]
+    pub month: i64,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrderMetrics {
+    pub processed: i64,
+    pub unprocessed: i64,
+    pub processed_by_timeframe: ProcessedByTimeframe,
+    pub chart_data: Vec<MontlyProcessedMetric>,
+}
+
+pub async fn compute_order_metrics(pool: &Pool<Connection>) -> Result<OrderMetrics> {
     let conn = &mut pool.get().await?;
-    let query = diesel::sql_query(
+    let chart_data = diesel::sql_query(
         "SELECT 
             DATE_TRUNC('month', processed_at) as month,
             COUNT(*)::BIGINT as entries
@@ -206,6 +223,27 @@ pub async fn compute_order_processing_chart(
         WHERE processed_at >= NOW() - INTERVAL '12 months'
         GROUP BY DATE_TRUNC('month', processed_at)
         ORDER BY month",
-    );
-    Ok(query.load::<MontlyProcessedMetric>(conn).await?)
+    )
+    .load::<MontlyProcessedMetric>(conn)
+    .await?;
+
+    let processed = processed_count(pool).await?;
+    let unprocessed = unprocessed_count(pool).await?;
+    let processed_by_timeframe = diesel::sql_query(
+        "
+        SELECT 
+          (SELECT COUNT(1) FROM orders WHERE processed_at > now() - INTERVAL '24 hours') as day,
+          (SELECT COUNT(1) FROM orders WHERE processed_at > now() - INTERVAL '7 days') as week,
+          (SELECT COUNT(1) FROM orders WHERE processed_at > now() - INTERVAL '1 month') as month;
+    ",
+    )
+    .get_result::<ProcessedByTimeframe>(conn)
+    .await?;
+
+    Ok(OrderMetrics {
+        processed,
+        unprocessed,
+        processed_by_timeframe,
+        chart_data,
+    })
 }
