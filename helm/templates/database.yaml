@@ -43,6 +43,7 @@ spec:
   primaryUpdateStrategy: unsupervised
   primaryUpdateMethod: switchover
   enableSuperuserAccess: false
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.1
   storage:
     size: {{ default "5Gi" $.Values.clusterDB.storageSize }}
     {{ if $.Values.clusterDB.storageClass }}
