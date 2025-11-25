@@ -1,0 +1,23 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cluster-update
+  namespace: lightspeed-dhl-adapter
+spec:
+  instances: 3
+  primaryUpdateMethod: switchover
+  primaryUpdateStrategy: unsupervised
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.1
+  imagePullPolicy: IfNotPresent
+  bootstrap:
+    recovery:
+      source: source
+  externalClusters:
+  - name: source
+    plugin:
+      name: barman-cloud.cloudnative-pg.io
+      parameters:
+        barmanObjectName: backblaze-b2
+        serverName: adapter-db
+  storage:
+    size: 1Gi
