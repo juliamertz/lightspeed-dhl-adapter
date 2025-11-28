@@ -2,7 +2,7 @@ pub mod models;
 
 use crate::schema::*;
 use diesel::{
-    dsl::sql,
+    dsl::{IntervalDsl, now, sql},
     expression::{SqlLiteral, TypedExpressionType},
     prelude::*,
     sql_types::{BigInt, Timestamp},
@@ -135,7 +135,8 @@ pub async fn unprocessed_count(pool: &Pool<Connection>) -> Result<i64> {
         .filter(
             orders::processed_at
                 .is_null()
-                .and(orders::cancelled_at.is_null()),
+                .and(orders::cancelled_at.is_null())
+                .and(orders::stale.eq(false)),
         )
         .get_result(&mut conn)
         .await?)
@@ -150,6 +151,24 @@ pub async fn processed_count(pool: &Pool<Connection>) -> Result<i64> {
         .await?)
 }
 
+pub async fn mark_stale(pool: &Pool<Connection>) -> Result<usize> {
+    let mut conn = pool.get().await?;
+
+    diesel::update(
+        orders::table.filter(
+            orders::processed_at
+                .is_null()
+                .and(orders::cancelled_at.is_null())
+                .and(orders::poll_count.gt(750))
+                .and(orders::created_at.lt(now - 6.months())),
+        ),
+    )
+    .set(orders::stale.eq(true))
+    .execute(&mut conn)
+    .await
+    .map_err(DatabaseError::Diesel)
+}
+
 pub async fn get_unprocessed_stream(
     pool: &Pool<Connection>,
 ) -> Result<impl Stream<Item = QueryResult<Order>>> {
@@ -161,7 +180,8 @@ pub async fn get_unprocessed_stream(
             .filter(
                 orders::processed_at
                     .is_null()
-                    .and(orders::cancelled_at.is_null()),
+                    .and(orders::cancelled_at.is_null())
+                    .and(orders::stale.eq(false)),
             )
             .order(orders::created_at.asc())
             .select(orders::id)

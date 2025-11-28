@@ -10,6 +10,7 @@ pub struct Order {
     pub id: i32,
     pub incoming_order: Option<serde_json::Value>,
     pub poll_count: i32,
+    pub stale: bool,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub processed_at: Option<NaiveDateTime>,

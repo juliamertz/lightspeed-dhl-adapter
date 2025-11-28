@@ -21,6 +21,10 @@ pollStatus:
   schedule: "*/5 * * * *" # every 5 minutes
   jobHistoryLimit: 3
 
+markStale:
+  schedule: "*/5 * * * *" # every 5 minutes
+  jobHistoryLimit: 3
+
 clusterDB:
   replicas: 1
   storageSize: 1Gi

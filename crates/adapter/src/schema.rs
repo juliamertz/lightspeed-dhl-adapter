@@ -5,6 +5,7 @@ diesel::table! {
         id -> Int4,
         incoming_order -> Nullable<Jsonb>,
         poll_count -> Int4,
+        stale -> Bool,
         created_at -> Timestamp,
         updated_at -> Timestamp,
         cancelled_at -> Nullable<Timestamp>,

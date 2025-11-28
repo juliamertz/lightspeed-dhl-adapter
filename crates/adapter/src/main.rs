@@ -18,7 +18,7 @@ use diesel_async::pooled_connection::bb8;
 use lightspeed::{client::LightspeedClient};
 use reqwest::StatusCode;
 use thiserror::Error;
-use tracing::error;
+use tracing::{error, info};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[derive(Parser, Clone)]
@@ -51,6 +51,8 @@ pub enum Command {
     },
     /// Poll DHL for order status updates
     PollStatus,
+    /// Mark old orders as stale
+    MarkStale,
 }
 
 #[derive(Debug, Error)]
@@ -123,9 +125,17 @@ async fn main() -> Result<(), AdapterError> {
     };
 
     match opts.command {
-        Command::PollStatus => poll::run_once(state).await?,
         Command::Serve { addr } => routes::serve(addr, state).await,
         Command::ServeMetrics { addr } => metrics::serve(addr, state).await,
+        Command::PollStatus => poll::run_once(state).await?,
+        Command::MarkStale => {
+            let updated_count = database::mark_stale(&state.pool).await?;
+            if updated_count == 0 {
+                info!("no stale orders found")
+            } else {
+                info!("marked {updated_count} orders as stale")
+            }
+        }
     };
 
     Ok(())

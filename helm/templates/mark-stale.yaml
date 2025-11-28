@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mark-stale
+spec:
+  schedule: {{ default "*/30 * * * *" .Values.markStale.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ default 3 .Values.markStale.jobHistoryLimit }}
+  failedJobsHistoryLimit: {{ default 3 .Values.markStale.jobHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: mark-stale
+            app.kubernetes.io/part-of: lightspeed-dhl-adapter
+        spec:
+          restartPolicy: OnFailure
+          imagePullSecrets:
+          - name: github-registry
+          containers:
+          - name: mark-stale
+            imagePullPolicy: IfNotPresent
+            image: {{ .Values.steiger.lightspeedDhlAdapter.image }}
+            command: ["/bin/lightspeed-dhl-adapter", "mark-stale"]
+            volumeMounts:
+            - name: config-volume
+              mountPath: /data
+              readOnly: true
+            env:
+            - name: DRY_RUN
+              value: {{ .Values.dryRun | quote }}
+            - name: CONFIG_PATH
+              value: /data/config.toml
+            - name: RUST_LOG
+              value: info{{- if .Values.debug -}},lightspeed_dhl_adapter=debug{{- end }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: adapter-db-app
+                  key: uri
+          volumes:
+          - name: config-volume
+            secret:
+              secretName: {{ .Values.configSecret.name }}
+              items:
+              - key: {{ .Values.configSecret.key }}
+                path: config.toml
