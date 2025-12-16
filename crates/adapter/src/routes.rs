@@ -31,7 +31,10 @@ pub async fn serve(addr: SocketAddr, state: AdapterState) {
     let cors_lightspeed_frontend = CorsLayer::new()
         .allow_methods(Any)
         .allow_origin(
-            "https://nettenshop.webshopapp.com"
+            state
+                .config
+                .lightspeed
+                .frontend
                 .parse::<HeaderValue>()
                 .unwrap(),
         )
