@@ -156,8 +156,9 @@ pub async fn mark_stale(pool: &Pool<Connection>) -> Result<usize> {
 
     diesel::update(
         orders::table.filter(
-            orders::processed_at
-                .is_null()
+            orders::stale
+                .eq(false)
+                .and(orders::processed_at.is_null())
                 .and(orders::cancelled_at.is_null())
                 .and(orders::poll_count.gt(750))
                 .and(orders::created_at.lt(now - 6.months())),
