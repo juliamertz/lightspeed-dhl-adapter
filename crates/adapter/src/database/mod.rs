@@ -47,8 +47,7 @@ where
     sql("DEFAULT")
 }
 
-pub async fn create_order(pool: &Pool<Connection>, incoming: &OrderWrapper) -> Result<Order> {
-    let mut conn = pool.get().await?;
+pub async fn create_order(conn: &mut Connection, incoming: &OrderWrapper) -> Result<Order> {
     let data = serde_json::to_value(incoming.clone()).expect("valid incoming order data");
 
     Ok(diesel::insert_into(orders::table)
@@ -58,78 +57,71 @@ pub async fn create_order(pool: &Pool<Connection>, incoming: &OrderWrapper) -> R
             orders::lightspeed_order_number.eq(incoming.order.number.to_string()),
         ))
         .returning(Order::as_returning())
-        .get_result(&mut conn)
+        .get_result(conn)
         .await?)
 }
 
-pub async fn link_dhl_draft(pool: &Pool<Connection>, draft_id: &Uuid, order_id: i32) -> Result<()> {
-    let mut conn = pool.get().await?;
-
+pub async fn link_dhl_draft(conn: &mut Connection, draft_id: &Uuid, order_id: i32) -> Result<()> {
     diesel::update(orders::table)
         .filter(orders::lightspeed_order_id.eq(order_id))
         .set(orders::dhl_draft_id.eq(draft_id))
-        .execute(&mut conn)
+        .execute(conn)
         .await?;
 
     Ok(())
 }
 
-pub async fn set_processed(pool: &Pool<Connection>, draft_id: &Uuid) -> Result<()> {
-    let mut conn = pool.get().await?;
+pub async fn set_processed(conn: &mut Connection, draft_id: &Uuid) -> Result<()> {
     diesel::update(orders::table)
         .filter(orders::dhl_draft_id.eq(draft_id))
         .set((
             orders::processed_at.eq(Local::now().naive_local()),
             orders::updated_at.eq(default()),
         ))
-        .execute(&mut conn)
+        .execute(conn)
         .await?;
     Ok(())
 }
 
-pub async fn set_cancelled(pool: &Pool<Connection>, draft_id: &Uuid) -> Result<()> {
-    let mut conn = pool.get().await?;
+pub async fn set_cancelled(conn: &mut Connection, draft_id: &Uuid) -> Result<()> {
     diesel::update(orders::table)
         .filter(orders::dhl_draft_id.eq(draft_id))
         .set((
             orders::cancelled_at.eq(Local::now().naive_local()),
             orders::updated_at.eq(default()),
         ))
-        .execute(&mut conn)
+        .execute(conn)
         .await?;
     Ok(())
 }
 
 pub async fn set_shipment_id(
-    pool: &Pool<Connection>,
+    conn: &mut Connection,
     draft_id: &Uuid,
     shipment_id: Option<Uuid>,
 ) -> Result<()> {
-    let mut conn = pool.get().await?;
     diesel::update(orders::table)
         .filter(orders::dhl_draft_id.eq(draft_id))
         .set(orders::dhl_shipment_id.eq(shipment_id))
-        .execute(&mut conn)
+        .execute(conn)
         .await?;
 
     Ok(())
 }
 
-pub async fn incr_poll_count(pool: &Pool<Connection>, order_id: i32) -> Result<()> {
-    let mut conn = pool.get().await?;
+pub async fn incr_poll_count(conn: &mut Connection, order_id: i32) -> Result<()> {
     diesel::update(orders::table)
         .filter(orders::lightspeed_order_id.eq(order_id))
         .set((
             orders::poll_count.eq(orders::poll_count + 1),
             orders::updated_at.eq(default()),
         ))
-        .execute(&mut conn)
+        .execute(conn)
         .await?;
     Ok(())
 }
 
-pub async fn unprocessed_count(pool: &Pool<Connection>) -> Result<i64> {
-    let mut conn = pool.get().await?;
+pub async fn unprocessed_count(conn: &mut Connection) -> Result<i64> {
     Ok(orders::table
         .count()
         .filter(
@@ -138,22 +130,19 @@ pub async fn unprocessed_count(pool: &Pool<Connection>) -> Result<i64> {
                 .and(orders::cancelled_at.is_null())
                 .and(orders::stale.eq(false)),
         )
-        .get_result(&mut conn)
+        .get_result(conn)
         .await?)
 }
 
-pub async fn processed_count(pool: &Pool<Connection>) -> Result<i64> {
-    let mut conn = pool.get().await?;
+pub async fn processed_count(conn: &mut Connection) -> Result<i64> {
     Ok(orders::table
         .count()
         .filter(orders::processed_at.is_not_null())
-        .get_result(&mut conn)
+        .get_result(conn)
         .await?)
 }
 
-pub async fn mark_stale(pool: &Pool<Connection>) -> Result<usize> {
-    let mut conn = pool.get().await?;
-
+pub async fn mark_stale(conn: &mut Connection) -> Result<usize> {
     diesel::update(
         orders::table.filter(
             orders::stale
@@ -165,16 +154,14 @@ pub async fn mark_stale(pool: &Pool<Connection>) -> Result<usize> {
         ),
     )
     .set(orders::stale.eq(true))
-    .execute(&mut conn)
+    .execute(conn)
     .await
     .map_err(DatabaseError::Diesel)
 }
 
 pub async fn get_unprocessed_stream(
-    pool: &Pool<Connection>,
+    pool: &ConnectionPool,
 ) -> Result<impl Stream<Item = QueryResult<Order>>> {
-    let pool = pool.clone();
-
     let order_ids: Vec<i32> = {
         let mut conn = pool.get().await?;
         orders::table
@@ -191,7 +178,6 @@ pub async fn get_unprocessed_stream(
     };
 
     Ok(stream::iter(order_ids).then(move |id| {
-        let pool = pool.clone();
         async move {
             let Ok(mut conn) = pool.get().await else {
                 // this is not ideal, i'm not sure if we can return a custom error here
@@ -234,8 +220,7 @@ pub struct OrderMetrics {
     pub chart_data: Vec<MontlyProcessedMetric>,
 }
 
-pub async fn compute_order_metrics(pool: &Pool<Connection>) -> Result<OrderMetrics> {
-    let conn = &mut pool.get().await?;
+pub async fn compute_order_metrics(conn: &mut Connection) -> Result<OrderMetrics> {
     let chart_data = diesel::sql_query(
         "SELECT 
             DATE_TRUNC('month', processed_at) as month,
@@ -248,8 +233,8 @@ pub async fn compute_order_metrics(pool: &Pool<Connection>) -> Result<OrderMetri
     .load::<MontlyProcessedMetric>(conn)
     .await?;
 
-    let processed = processed_count(pool).await?;
-    let unprocessed = unprocessed_count(pool).await?;
+    let processed = processed_count(conn).await?;
+    let unprocessed = unprocessed_count(conn).await?;
     let processed_by_timeframe = diesel::sql_query(
         "
         SELECT 

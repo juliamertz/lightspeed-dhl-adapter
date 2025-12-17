@@ -30,6 +30,7 @@ pub async fn serve(addr: SocketAddr, state: AdapterState) {
 
     let cors_lightspeed_frontend = CorsLayer::new()
         .allow_methods(Any)
+        .allow_headers([http::header::AUTHORIZATION, http::header::CONTENT_TYPE])
         .allow_origin(
             state
                 .config
@@ -37,8 +38,7 @@ pub async fn serve(addr: SocketAddr, state: AdapterState) {
                 .frontend
                 .parse::<HeaderValue>()
                 .unwrap(),
-        )
-        .allow_headers([http::header::AUTHORIZATION, http::header::CONTENT_TYPE]);
+        );
 
     let app = Router::new()
         .route("/ready", get(ready))
@@ -89,13 +89,15 @@ pub async fn webhook(
         "received webhook"
     );
 
-    database::create_order(&pool, &incoming).await?;
+    let conn = &mut pool.get().await?;
+    database::create_order(conn, &incoming).await?;
 
     let draft = transform::transform_order(incoming.clone());
+    let draft_id = Uuid::from_str(&draft.id)?;
+
     dhl.create_draft(&draft).await?;
 
-    let draft_id = Uuid::from_str(&draft.id)?;
-    database::link_dhl_draft(&pool, &draft_id, incoming.order.id as i32).await?;
+    database::link_dhl_draft(conn, &draft_id, incoming.order.id as i32).await?;
 
     Ok(StatusCode::OK.into_response())
 }
@@ -113,7 +115,8 @@ pub async fn stock_under_threshold(
 
 #[instrument(err(Debug))]
 pub async fn order_metrics(State(pool): State<ConnectionPool>) -> Result<Response, AdapterError> {
-    Ok(database::compute_order_metrics(&pool)
+    let conn = &mut pool.get().await?;
+    Ok(database::compute_order_metrics(conn)
         .await
         .map(Into::into)
         .map(Json::into_response)?)

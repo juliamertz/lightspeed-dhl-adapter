@@ -129,7 +129,8 @@ async fn main() -> Result<(), AdapterError> {
         Command::ServeMetrics { addr } => metrics::serve(addr, state).await,
         Command::PollStatus => poll::run_once(state).await?,
         Command::MarkStale => {
-            let updated_count = database::mark_stale(&state.pool).await?;
+            let conn = &mut state.pool.get().await?;
+            let updated_count = database::mark_stale(conn).await?;
             if updated_count == 0 {
                 info!("no stale orders found")
             } else {

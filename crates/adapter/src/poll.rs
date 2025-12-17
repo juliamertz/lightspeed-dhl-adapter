@@ -15,7 +15,9 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
         .dhl_draft_id
         .context("order has been created without a draft id")?;
 
-    database::incr_poll_count(&state.pool, order.lightspeed_order_id).await?;
+    let conn = &mut state.pool.get().await?;
+
+    database::incr_poll_count(conn, order.lightspeed_order_id).await?;
 
     // we check for `order_id` first as this should be set as the order_reference.
     // labels may be created manually in which case this reference isn't set
@@ -39,11 +41,11 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
                 { lightspeed_id = data.order.id },
                 "order has been cancelled"
             );
-            database::set_cancelled(&state.pool, &draft_id).await?;
+            database::set_cancelled(conn, &draft_id).await?;
             return Ok(OrderStatus::Cancelled);
         }
 
-        database::set_shipment_id(&state.pool, &draft_id, label.shipment_id).await?;
+        database::set_shipment_id(conn, &draft_id, label.shipment_id).await?;
 
         state
             .lightspeed
@@ -64,7 +66,7 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
             return Ok(updated.status);
         }
 
-        database::set_processed(&state.pool, &draft_id).await?;
+        database::set_processed(conn, &draft_id).await?;
 
         info!(
             { lightspeed_id = data.order.id, draft_id = ?&draft_id, shipment_id = ?&label.shipment_id },
@@ -78,7 +80,9 @@ async fn reconcile_order_status(state: &AdapterState, order: &Order) -> Result<O
 }
 
 pub async fn run_once(state: AdapterState) -> Result<()> {
-    let amount = database::unprocessed_count(&state.pool).await?;
+    let conn = &mut state.pool.get().await?;
+    let amount = database::unprocessed_count(conn).await?;
+
     if amount == 0 {
         info!("nothing to do.");
         return Ok(());

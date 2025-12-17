@@ -39,10 +39,12 @@ async fn metrics(
     State(handle): State<PrometheusHandle>,
     State(pool): State<ConnectionPool>,
 ) -> Result<Response, AdapterError> {
+    let conn = &mut pool.get().await?;
+
     gauge!("lightspeed_dhl_adapter_unprocessed_count")
-        .set(database::unprocessed_count(&pool).await? as f64);
+        .set(database::unprocessed_count(conn).await? as f64);
     gauge!("lightspeed_dhl_adapter_processed_count")
-        .set(database::processed_count(&pool).await? as f64);
+        .set(database::processed_count(conn).await? as f64);
 
     Ok(handle.render().into_response())
 }
