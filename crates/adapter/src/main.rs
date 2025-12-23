@@ -6,7 +6,7 @@ mod routes;
 mod schema;
 mod transform;
 
-use std::{net::SocketAddr, path::PathBuf, sync::Arc};
+use std::{fmt::Debug, net::SocketAddr, path::PathBuf, sync::Arc};
 
 use axum::response::IntoResponse;
 use axum_macros::FromRef;
@@ -15,11 +15,11 @@ use config::Config;
 use database::ConnectionPool;
 use dhl::client::DHLClient;
 use diesel_async::pooled_connection::bb8;
-use lightspeed::{client::LightspeedClient};
+use lightspeed::client::LightspeedClient;
 use reqwest::StatusCode;
 use thiserror::Error;
 use tracing::{error, info};
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
 #[derive(Parser, Clone)]
 pub struct Opts {
@@ -98,8 +98,10 @@ pub struct AdapterState {
 async fn main() -> Result<(), AdapterError> {
     let opts = Opts::parse();
 
-    tracing_subscriber::registry()
-        .with(tracing_setup::logging())
+    tracing_subscriber::fmt()
+        .json()
+        .flatten_event(true)
+        .with_env_filter(EnvFilter::from_default_env())
         .init();
 
     let pool = database::establish_connection(&opts.database_url).await?;
