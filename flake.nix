@@ -36,6 +36,10 @@
         system = localSystem;
         inherit overlays;
       };
+      pkgsTarget = import nixpkgs {
+        system = crossSystem;
+        inherit overlays;
+      };
       pkgsCross = import nixpkgs {
         inherit localSystem crossSystem overlays;
       };
@@ -58,7 +62,7 @@
           paths = [
             package
             pkgs.dockerTools.caCertificates
-            pkgsCross.diesel-cli
+            pkgsTarget.diesel-cli
             migrations
           ];
           pathsToLink = [
