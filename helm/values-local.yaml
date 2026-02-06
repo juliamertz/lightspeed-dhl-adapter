@@ -16,6 +16,8 @@ webhook:
   maxReplicas: 3
   hostnames:
     - adapter.cluster.localhost
+  probe:
+    enabled: false
 
 pollStatus:
   schedule: "*/5 * * * *" # every 5 minutes

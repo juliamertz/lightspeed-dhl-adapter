@@ -18,6 +18,12 @@ webhook:
     - lightspeed-adapter.juliamertz.dev
     - nettenshop.juliamertz.dev
     - nettenshop.juliamertz.nl
+  probe:
+    enabled: true
+    proberUrl: blackbox-exporter.monitoring:9115
+    interval: 60s
+    module: http_2xx
+    targetUrl: https://nettenshop.juliamertz.dev/ready
 
 pollStatus:
   schedule: 0 6-18 * * 1-5

@@ -243,3 +243,26 @@ spec:
   {{- range .Values.webhook.hostnames }}
     - {{ . | quote }}
   {{- end }}
+
+{{ with .Values.webhook.probe }}
+{{ if .enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: webhook-probe
+  labels:
+    app.kubernetes.io/name: webhook
+    app.kubernetes.io/part-of: {{ $.Release.Name }}
+    release: kube-prometheus-stack
+spec:
+  interval: {{ default .interval "30s" }}
+  module: {{ default .module "http_2xx" }}
+  prober:
+    url: {{ .proberUrl }}
+  targets:
+    staticConfig:
+      static:
+        - {{ .targetUrl }}
+{{ end }}
+{{ end }}
