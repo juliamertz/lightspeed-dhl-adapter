@@ -4,7 +4,7 @@ kind: ObjectStore
 metadata:
   name: backblaze-b2
 spec:
-  retentionPolicy: 30d
+  retentionPolicy: {{ default "30d" $.Values.clusterDB.backup.retentionPolicy }}
   configuration:
     destinationPath: s3://backups-0snsf7rceJ/barman
     endpointURL: https://s3.eu-central-003.backblazeb2.com
@@ -71,5 +71,5 @@ spec:
   - name: barman-cloud.cloudnative-pg.io
     isWALArchiver: true
     parameters:
-      barmanObjectName: {{ $.Values.clusterDB.backup.barmanObjectName }}
+      barmanObjectName: backblaze-b2
   {{ end }}

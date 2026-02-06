@@ -40,7 +40,7 @@ clusterDB:
   backup:
     enabled: true
     schedule: 0 0 0 * * *
-    barmanObjectName: backblaze-b2
+    retentionPolicy: 90d
 
 metrics:
   enabled: true
