@@ -193,7 +193,7 @@ metadata:
     app.kubernetes.io/part-of: {{ .Release.Name }}
 spec:
   parentRefs:
-    - {{ .Values.gateway | toYaml | nindent 6 }}
+    - name: {{ .Release.Name }}-gateway
   hostnames:
   {{- range .Values.webhook.hostnames }}
     - {{ . | quote }}
@@ -228,18 +228,18 @@ spec:
             statusCode: 302
 
 ---
-apiVersion: cert-vandal.io/v1
-kind: SANInjection
+apiVersion: cert-manager.io/v1
+kind: Certificate
 metadata:
-  name: webhook-route
+  name: {{ .Release.Name }}-gateway-tls
   labels:
-    app.kubernetes.io/name: webhook
     app.kubernetes.io/part-of: {{ .Release.Name }}
 spec:
-  targetCertificate:
-    name: gateway-tls
-    namespace: default
-  hostnames:
+  secretName: {{ .Release.Name }}-gateway-tls
+  issuerRef:
+    name: {{ default "letsencrypt-prod" .Values.gateway.issuerName }}
+    kind: {{ default "ClusterIssuer" .Values.gateway.issuerKind }}
+  dnsNames:
   {{- range .Values.webhook.hostnames }}
     - {{ . | quote }}
   {{- end }}

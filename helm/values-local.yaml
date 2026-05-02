@@ -4,8 +4,8 @@ dryRun: true
 debug: true
 
 gateway:
-  name: shared
-  namespace: default
+  className: envoy
+  issuerName: letsencrypt-staging
 
 configSecret:
   name: config

@@ -4,8 +4,8 @@ dryRun: false
 debug: false
 
 gateway:
-  name: shared
-  namespace: default
+  className: envoy
+  issuerName: letsencrypt-prod
 
 configSecret:
   name: config
@@ -17,9 +17,8 @@ webhook:
   hostnames:
     - lightspeed-adapter.juliamertz.dev
     - nettenshop.juliamertz.dev
-    - nettenshop.juliamertz.nl
   probe:
-    enabled: true
+    enabled: false
     proberUrl: blackbox-exporter.monitoring:9115
     interval: 60s
     module: http_2xx
@@ -34,14 +33,14 @@ markStale:
   jobHistoryLimit: 3
 
 clusterDB:
-  replicas: 3
-  storageSize: 5Gi
-  storageClass: longhorn-local
+  replicas: 2
+  storageSize: 10Gi
+  storageClass: hcloud-volumes
   backup:
-    enabled: true
+    enabled: false
     schedule: 0 0 0 * * *
     retentionPolicy: 90d
 
 metrics:
-  enabled: true
+  enabled: false
   releaseName: kube-prometheus-stack
