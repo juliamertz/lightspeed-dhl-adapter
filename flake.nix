@@ -7,7 +7,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     filter.url = "github:numtide/nix-filter";
-    steiger.url = "github:brainhivenl/steiger/feat/nix-force-host-platform";
+    steiger.url = "github:brainhivenl/steiger/feat/nix-oci-buildtools";
   };
 
   outputs = {
@@ -55,25 +55,19 @@
       adapter = pkgs.ociTools.buildImage {
         name = package.pname;
         tag = "latest";
-        created = "now";
-
-        copyToRoot = pkgsCross.buildEnv {
-          name = "${package.pname}-sysroot";
-          paths = [
-            package
-            pkgs.dockerTools.caCertificates
-            pkgsTarget.diesel-cli
-            migrations
-          ];
-          pathsToLink = [
-            "/bin"
-            "/etc"
-            "/data"
-          ];
-        };
+        layers = [
+          package
+          pkgs.dockerTools.caCertificates
+          pkgsTarget.diesel-cli
+          migrations
+        ];
+        pathsToLink = [
+          "/bin"
+          "/etc"
+          "/data"
+        ];
 
         config.Cmd = ["/bin/${package.pname}"];
-        compressor = "none";
       };
     });
 
