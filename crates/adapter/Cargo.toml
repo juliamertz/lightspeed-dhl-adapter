@@ -36,31 +36,32 @@ once_cell = "1.21.3"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["json", "env-filter", "ansi"], default-features = false }
 
-chrono = { version = "0.4.41", features = ["serde"] }
-uuid = { version = "1.16.0", features = ["v4"] }
-base64 = "0.22.1"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4"] }
+base64 = "0.22"
 
-serde = { version = "1.0.219", features = ["derive"] }
-serde_with = "3.14.1"
-serde_json = "1.0.140"
-toml = "0.8.22"
+serde = { version = "1", features = ["derive"] }
+serde_with = "3"
+serde_json = "1"
+toml = "0.8"
 
-tokio = { version = "1.44.2", features = ["full"] }                                                                                   
-futures = "0.3.31"
-tower-http = { version = "0.6.6", features = ["trace", "cors"] }
+tokio = { version = "1", features = ["full"] }                                                                                   
+futures = "0.3"
+tower-http = { version = "0.6", features = ["trace", "cors"] }
 reqwest = { workspace = true }
 
-axum = "0.8.3"                                                                                                                        
-axum-macros = "0.5.0"
-axum-prometheus = "0.9.0"
-metrics = "0.24.2"
+axum = "0.8"                                                                                                                        
+axum-macros = "0.5"
+axum-prometheus = "0.9"
+metrics = "0.24"
 
-diesel = { version = "2.2.10", features = ["chrono", "uuid", "serde_json"]}
-diesel-async = { version = "0.5.2", features = [
+diesel = { version = "2", features = ["chrono", "uuid", "serde_json"]}
+diesel-async = { version = "0.9", features = [
     "postgres",
     "bb8",
     "async-connection-wrapper",
 ] }
-http = "1.3.1"
+http = "1"
+scoped-futures = "0.1.4"
 
 
