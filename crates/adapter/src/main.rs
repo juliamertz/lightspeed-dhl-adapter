@@ -19,7 +19,7 @@ use lightspeed::client::LightspeedClient;
 use reqwest::StatusCode;
 use thiserror::Error;
 use tracing::{error, info};
-use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
+use tracing_subscriber::EnvFilter;
 
 #[derive(Parser, Clone)]
 pub struct Opts {
